@@ -51,7 +51,7 @@ public class AuthService
                         .build();
     }
 
-    public AuthResponse login(LoginRequest request) {                       //method called when user logs in, takes LoginRequest as input and returns AuthResponse
+    public AuthResponse login(LoginRequest request) {       
 
         Optional<User> optionalUser =
                 userRepository.findByUsername(request.getUsername());
