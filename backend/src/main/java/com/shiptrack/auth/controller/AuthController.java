@@ -11,6 +11,8 @@ import com.shiptrack.auth.dto.AuthResponse;
 import com.shiptrack.auth.dto.RegisterRequest;
 import com.shiptrack.auth.service.AuthService;
 
+import com.shiptrack.auth.dto.LoginRequest;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController 
@@ -23,8 +25,7 @@ public class AuthController
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @RequestBody RegisterRequest request) 
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) 
     {
 
         AuthResponse response = authService.register(request);
@@ -32,6 +33,15 @@ public class AuthController
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+
+        AuthResponse response = authService.login(request);
+
+        return ResponseEntity.ok(response);
     }
 
 }
