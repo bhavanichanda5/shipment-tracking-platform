@@ -13,6 +13,12 @@ import com.shiptrack.auth.service.AuthService;
 
 import com.shiptrack.auth.dto.LoginRequest;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.shiptrack.auth.dto.UserProfileResponse;
+import com.shiptrack.auth.entity.User;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController 
@@ -42,6 +48,13 @@ public class AuthController
         AuthResponse response = authService.login(request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+    public String profile(Authentication authentication) {
+
+        return "Logged in as : " + authentication.getName();
+
     }
 
 }
