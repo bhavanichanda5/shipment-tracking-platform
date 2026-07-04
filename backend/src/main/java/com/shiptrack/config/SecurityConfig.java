@@ -12,12 +12,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+
+import com.shiptrack.auth.service.CustomUserDetailsService;
+
 
 @Configuration
 public class SecurityConfig {
 
     @Autowired
     private  JwtAuthFilter jwtAuthFilter;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {        
@@ -29,11 +38,11 @@ public class SecurityConfig {
                     .anyRequest().authenticated()
             )
 
+            .authenticationProvider(authenticationProvider())
+
             .sessionManagement(session ->
-
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)                                  //JWT doesn't use sessions. Every request carries its own token.So we tell Spring, Don't create sessions.This is exactly how modern REST APIs work
-
-            )
+                                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)                                  //JWT doesn't use sessions. Every request carries its own token.So we tell Spring, Don't create sessions.This is exactly how modern REST APIs work
+          )
 
             .addFilterBefore(jwtAuthFilter,
                     UsernamePasswordAuthenticationFilter.class)                                                 //This line is the heart of JWT Security
@@ -41,12 +50,27 @@ public class SecurityConfig {
             .formLogin(form -> form.disable())
             .httpBasic(httpBasic -> httpBasic.disable());
 
+            
+
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+
+        return provider;
     }
 
     @Bean

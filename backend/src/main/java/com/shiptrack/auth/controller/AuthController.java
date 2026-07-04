@@ -16,9 +16,6 @@ import com.shiptrack.auth.dto.LoginRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.shiptrack.auth.dto.UserProfileResponse;
-import com.shiptrack.auth.entity.User;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController 
