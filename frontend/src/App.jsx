@@ -1,18 +1,37 @@
-//import Register from "./pages/auth/Register";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/auth/Login";
-
-
-/*function App() {
-    return (
-        <Register />
-    );
-}
-
-export default App;*/
+import Register from "./pages/auth/Register";
 
 function App() {
-  return <Login />;
+
+    return (
+
+        <BrowserRouter>
+
+            <Routes>
+
+                <Route
+                    path="/"
+                    element={<Login />}
+                />
+
+                <Route
+                    path="/login"
+                    element={<Login />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
+
+            </Routes>
+
+        </BrowserRouter>
+
+    );
+
 }
 
 export default App;

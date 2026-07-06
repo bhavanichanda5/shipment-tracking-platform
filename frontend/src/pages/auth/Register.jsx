@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { register } from "../../services/authService";
+import "../../styles/Register.css";
+
+import { useNavigate } from "react-router-dom";
+
+import registerBg from "../../assets/login-bg.jpg";
 
 function Register() {
 
@@ -9,6 +14,8 @@ function Register() {
         role: "CUSTOMER"
     });
 
+    const navigate = useNavigate();
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -17,9 +24,11 @@ function Register() {
     };
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         try {
+
             const response = await register(formData);
 
             alert(response);
@@ -30,68 +39,104 @@ function Register() {
                 role: "CUSTOMER"
             });
 
-        }  catch (error) {
-    console.error("Error:", error);
+        } catch (error) {
 
-    if (error.response) {
-        console.log("Status:", error.response.status);
-        console.log("Data:", error.response.data);
-        alert(error.response.data);
-    } else {
-        alert(error.message);
-    }
-}
+            if (error.response) {
+                alert(error.response.data);
+            } else {
+                alert(error.message);
+            }
+
+        }
+
     };
 
     return (
-        <div style={{ padding: "30px" }}>
 
-            <h2>Register</h2>
+        <div
+            className="register-page"
+            style={{ backgroundImage: `url(${registerBg})` }}
+        >
 
-            <form onSubmit={handleSubmit}>
+            <div className="overlay"></div>
 
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    value={formData.username}
-                    onChange={handleChange}
-                />
+            <div className="register-content">
 
-                <br /><br />
+                <h1>Create an Account</h1>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                />
+                <p className="heading-text">
+                    Join ShipTrack and start your shipping journey with us.
+                </p>
 
-                <br /><br />
+                <div className="register-card">
 
-                <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                >
-                    <option value="CUSTOMER">Customer</option>
-                    <option value="BUSINESS_CLIENT">Business Client</option>
-                    <option value="LOGISTICS_OPERATOR">Logistics Operator</option>
-                    <option value="SUPPORT_AGENT">Support Agent</option>
-                    <option value="ADMIN">Admin</option>
-                </select>
+                    <h2>🚚 ShipTrack</h2>
 
-                <br /><br />
+                    <p className="subtitle">
+                        Create Your Account
+                    </p>
 
-                <button type="submit">
-                    Register
-                </button>
+                    <form onSubmit={handleSubmit}>
 
-            </form>
+                        <label>Username</label>
+
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Enter Username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
+                        />
+
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+
+                        <label>Role</label>
+
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                        >
+                            <option value="CUSTOMER">Customer</option>
+                            <option value="BUSINESS_CLIENT">Business Client</option>
+                            <option value="LOGISTICS_OPERATOR">Logistics Operator</option>
+                            <option value="SUPPORT_AGENT">Support Agent</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+
+                        <button type="submit">
+                            Create Account
+                        </button>
+
+                    </form>
+
+                   <p className="login-link">
+                        Already have an account?
+
+                        <span onClick={() => navigate("/login")}>
+                            Login
+                        </span>
+
+                    </p>
+
+                </div>
+
+            </div>
 
         </div>
+
     );
+
 }
 
 export default Register;
