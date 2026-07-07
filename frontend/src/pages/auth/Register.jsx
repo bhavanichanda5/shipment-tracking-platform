@@ -1,43 +1,56 @@
 import { useState } from "react";
-import { register } from "../../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+
 import "../../styles/Register.css";
+import logo from "../../assets/logo.jpg";
 
-import { useNavigate } from "react-router-dom";
-
-import registerBg from "../../assets/login-bg.jpg";
+import { register } from "../../services/authService";
 
 function Register() {
 
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
-        username: "",
+        fullName: "",
+        email: "",
         password: "",
+        confirmPassword: "",
         role: "CUSTOMER"
     });
 
-    const navigate = useNavigate();
-
     const handleChange = (e) => {
+
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+
     };
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
 
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        const registerRequest = {
+            username: formData.email,   // backend expects username
+            password: formData.password,
+            role: formData.role
+        };
+
         try {
 
-            const response = await register(formData);
+            const response = await register(registerRequest);
 
             alert(response);
 
-            setFormData({
-                username: "",
-                password: "",
-                role: "CUSTOMER"
-            });
+            navigate("/login");
 
         } catch (error) {
 
@@ -53,81 +66,139 @@ function Register() {
 
     return (
 
-        <div
-            className="register-page"
-            style={{ backgroundImage: `url(${registerBg})` }}
-        >
+        <div className="register-page">
 
-            <div className="overlay"></div>
-
-            <div className="register-content">
-
-                <h1>Create an Account</h1>
-
-                <p className="heading-text">
-                    Join ShipTrack and start your shipping journey with us.
-                </p>
+            <div className="register-overlay">
 
                 <div className="register-card">
 
-                    <h2>🚚 ShipTrack</h2>
+                    <div className="logo-section">
 
-                    <p className="subtitle">
-                        Create Your Account
-                    </p>
+                        <img
+                            src={logo}
+                            alt="ShipTrack"
+                            className="register-logo"
+                        />
+
+                        <h2>Create Your Account</h2>
+
+                        <p>
+                            Join ShipTrack and start tracking shipments smarter.
+                        </p>
+
+                    </div>
 
                     <form onSubmit={handleSubmit}>
 
-                        <label>Username</label>
+                        <div className="input-box">
 
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Enter Username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                        />
+                            <FaUser className="icon"/>
 
-                        <label>Password</label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                placeholder="Full Name"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                required
+                            />
 
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Enter Password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
+                        </div>
 
-                        <label>Role</label>
+                        <div className="input-box">
+
+                            <FaEnvelope className="icon"/>
+
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Email Address"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
+
+                        </div>
+
+                        <div className="password-row">
+
+                            <div className="input-box">
+
+                                <FaLock className="icon"/>
+
+                                <input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+                            <div className="input-box">
+
+                                <FaLock className="icon"/>
+
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    placeholder="Confirm Password"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
 
                         <select
+                            className="role-select"
                             name="role"
                             value={formData.role}
                             onChange={handleChange}
                         >
+
                             <option value="CUSTOMER">Customer</option>
                             <option value="BUSINESS_CLIENT">Business Client</option>
                             <option value="LOGISTICS_OPERATOR">Logistics Operator</option>
                             <option value="SUPPORT_AGENT">Support Agent</option>
                             <option value="ADMIN">Admin</option>
+
                         </select>
 
-                        <button type="submit">
-                            Create Account
+                        <button
+                            type="submit"
+                            className="register-btn"
+                        >
+                            Register
                         </button>
 
+                        <div className="divider">
+                            <span>OR</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="google-btn"
+                        >
+                            <FcGoogle />
+                            Continue with Google
+                        </button>
+
+                        <div className="bottom-link">
+
+                            Already have an account?
+
+                            <Link to="/login">
+                                Login
+                            </Link>
+
+                        </div>
+
                     </form>
-
-                   <p className="login-link">
-                        Already have an account?
-
-                        <span onClick={() => navigate("/login")}>
-                            Login
-                        </span>
-
-                    </p>
 
                 </div>
 

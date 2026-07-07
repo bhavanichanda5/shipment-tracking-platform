@@ -1,19 +1,28 @@
-import { useState } from "react";
-import { login } from "../../services/authService";
 import "../../styles/Login.css";
 
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { login } from "../../services/authService";
+import { Link, useNavigate } from "react-router-dom";
 
-import loginBg from "../../assets/login_bg2.png";
+import {
+    FaUser,
+    FaLock,
+    FaEye,
+    FaEyeSlash
+} from "react-icons/fa";
+
+import logo from "../../assets/logo.jpg";
 
 function Login() {
+
+    const navigate = useNavigate();
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         username: "",
         password: ""
     });
-
-    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({
@@ -21,7 +30,6 @@ function Login() {
             [e.target.name]: e.target.value
         });
     };
-
 
     const handleSubmit = async (e) => {
 
@@ -32,8 +40,9 @@ function Login() {
             const response = await login(formData);
 
             localStorage.setItem("token", response.token);
+            localStorage.setItem("username", formData.username);
 
-            alert("Login Successful");
+            navigate("/dashboard");
 
         } catch (error) {
 
@@ -51,62 +60,94 @@ function Login() {
 
         <div className="login-page">
 
-            <div className="left-section">
-                <img
-                    src={loginBg}
-                    alt="Shipment Tracking"
-                    className="login-image"
-                />
-            </div>
+            <div className="login-overlay">
 
-            <div className="right-section">
+                <div className="login-card">
 
-                <div className="login-box">
+                    <div className="logo-section">
 
-                    <h2>🚚 ShipTrack</h2>
+                        <img
+                            src={logo}
+                            alt="ShipTrack"
+                            className="login-logo"
+                        />
 
-                    <p>
-                        Shipment Tracking & Delivery Visibility Platform
-                    </p>
+                        <h1>ShipTrack</h1>
+
+                        <p>Secure Shipment Tracking Platform</p>
+
+                    </div>
 
                     <form onSubmit={handleSubmit}>
 
-                        <label>Username</label>
+                        <div className="input-box">
 
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Enter Username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                        />
+                            <FaUser />
 
-                        <label>Password</label>
+                            <input
+                                type="text"
+                                name="username"
+                                placeholder="Username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                required
+                            />
 
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Enter Password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
+                        </div>
 
-                        <button type="submit">
-                            Login
+                        <div className="input-box">
+
+                            <FaLock />
+
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+
+                            <span
+                                onClick={() =>
+                                    setShowPassword(!showPassword)
+                                }
+                            >
+                                {
+                                    showPassword
+                                        ? <FaEyeSlash />
+                                        : <FaEye />
+                                }
+                            </span>
+
+                        </div>
+
+                        <div className="forgot">
+
+                            <Link to="/forgot-password">
+                                Forgot Password?
+                            </Link>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="login-btn"
+                        >
+                            Sign In
                         </button>
 
                     </form>
 
-                    <div className="register-link">
-                        Don't have an account?
+                    <p className="bottom-text">
 
-                        <span onClick={() => navigate("/register")}>
+                        First time here?
+
+                        <Link to="/register">
                             Register
-                        </span>
+                        </Link>
 
-                    </div>
+                    </p>
 
                 </div>
 
