@@ -12,27 +12,28 @@ import com.shiptrack.auth.entity.User;
 import com.shiptrack.auth.repository.UserRepository;
 
 @Service
-public class AuthService 
-{
-    private final UserRepository userRepository;                            //Save User
-    private final PasswordEncoder passwordEncoder;                  //Encode Password
+public class AuthService {
 
-    private final JwtService jwtService;                                        //Generate JWT Token
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository,       
-                                PasswordEncoder passwordEncoder, 
-                                JwtService jwtService)                                          //Constructor Injection
-    {
-        this.userRepository = userRepository;                   
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
+
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
-    public AuthResponse register(RegisterRequest request)               //method called when user registers, takes RegisterRequest as input and returns AuthResponse
-    {
+    // ===========================
+    // Register
+    // ===========================
 
-        if (userRepository.existsByUsername(request.getUsername())) 
-        {
+    public AuthResponse register(RegisterRequest request) {
+
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
 
@@ -40,18 +41,23 @@ public class AuthService
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
-                .build();                                                   //Create a new User object using the builder pattern, setting the username, encoded password, and role from the RegisterRequest
+                .build();
 
+        userRepository.save(user);
 
-                userRepository.save(user);
-
-                return AuthResponse.builder()
-                        .message("User Registered Successfully")
-                        .token(null)
-                        .build();
+        return AuthResponse.builder()
+                .message("User Registered Successfully")
+                .token(null)
+                .username(user.getUsername())
+                .role(user.getRole())
+                .build();
     }
 
-    public AuthResponse login(LoginRequest request) {       
+    // ===========================
+    // Login
+    // ===========================
+
+    public AuthResponse login(LoginRequest request) {
 
         Optional<User> optionalUser =
                 userRepository.findByUsername(request.getUsername());
@@ -62,7 +68,10 @@ public class AuthService
 
         User user = optionalUser.get();
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
             throw new RuntimeException("Invalid Password");
         }
 
@@ -71,6 +80,9 @@ public class AuthService
         return AuthResponse.builder()
                 .message("Login Successful")
                 .token(token)
+                .username(user.getUsername())
+                .role(user.getRole())
                 .build();
     }
+
 }

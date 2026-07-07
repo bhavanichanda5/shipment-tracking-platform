@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.shiptrack.auth.entity.Role;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,8 +15,13 @@ import lombok.Setter;
 @Builder
 public class AuthResponse {
 
+     private String message;
+
     private String token;
 
-    private String message;
+    private String username;
+
+    private Role role;
+
 
 }
