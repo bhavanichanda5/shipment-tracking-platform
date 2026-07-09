@@ -109,7 +109,8 @@ tbody tr:hover{
 }
 
 .delivered{
-    background:#22c55e;
+    /* Delivered should be green */
+    background: #22c55e !important;
 }
 
 .pending{
@@ -121,7 +122,8 @@ tbody tr:hover{
 }
 
 .in_transit{
-    background:#2563eb;
+    /* In transit should be blue */
+    background: #2563eb !important;
 }
 
 .edit-btn{

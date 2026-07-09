@@ -64,6 +64,8 @@ function Register() {
                 localStorage.setItem("name", response.name);
                 window.dispatchEvent(new Event("nameChanged"));
             }
+            // trigger activities refresh (backend records user registration)
+            window.dispatchEvent(new Event('activities:update'));
             alert(response.message);
 
         } catch (error) {
@@ -118,7 +120,7 @@ function Register() {
                                 type="text"
                                 name="name"
                                 placeholder="Full Name"
-                                value={formData.fullName}
+                                value={formData.name}
                                 onChange={handleChange}
                                 required
                             />

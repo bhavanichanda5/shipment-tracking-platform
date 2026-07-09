@@ -18,9 +18,13 @@ import { useState } from "react";
 
 import "../styles/Sidebar.css";
 
-function Sidebar() {
+function Sidebar({ onSelect }) {
 
     const [collapsed, setCollapsed] = useState(false);
+
+    const select = (key) => {
+        if (onSelect) onSelect(key);
+    };
 
     return (
 
@@ -41,17 +45,17 @@ function Sidebar() {
 
             <ul>
 
-                <li>
+                <li onClick={() => select('dashboard')}>
                     <FaTachometerAlt />
                     {!collapsed && <span>Dashboard</span>}
                 </li>
 
-                <li>
+                <li onClick={() => select('users')}>
                     <FaUsers />
                     {!collapsed && <span>Users</span>}
                 </li>
 
-                <li>
+                <li onClick={() => select('shipments')}>
                     <FaBoxOpen />
                     {!collapsed && <span>Shipments</span>}
                 </li>

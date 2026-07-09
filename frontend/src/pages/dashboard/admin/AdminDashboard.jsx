@@ -3,6 +3,7 @@ import Navbar from "../../../components/Navbar";
 import StatCard from "../../../components/StatCard";
 import ShipmentTable from "../../../components/ShipmentTable";
 import AnalyticsSection from "../../../components/AnalyticsSection";
+import UsersTable from "../../../components/UsersTable";
 import QuickActions from "../../../components/QuickActions";
 import RecentActivities from "../../../components/RecentActivities";
 
@@ -39,6 +40,7 @@ function AdminDashboard() {
     });
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [section, setSection] = useState('dashboard');
 
     useEffect(() => {
 
@@ -76,7 +78,7 @@ function AdminDashboard() {
 
             {/* Sidebar */}
 
-            <Sidebar />
+            <Sidebar onSelect={setSection} />
 
             {/* Right Content */}
 
@@ -103,71 +105,87 @@ function AdminDashboard() {
                     }}
                 >
 
-                    <h1>Welcome Admin 👋</h1>
+                    {/* Dashboard view */}
+                    {section === 'dashboard' && (
+                        <>
+                            <h1>Welcome Admin 👋</h1>
 
-                    <p>
-                        Manage shipments, users and logistics from one place.
-                    </p>
+                            <p>
+                                Manage shipments, users and logistics from one place.
+                            </p>
 
-                    {/* Statistics */}
+                            {/* Statistics */}
 
-                    <div className="stats-container">
+                            <div className="stats-container">
 
-                        <StatCard
-                            title="Total Users"
-                            value={stats.totalUsers}
-                            icon={<FaUsers />}
-                            color="#2563EB"
-                        />
+                                <StatCard
+                                    title="Total Users"
+                                    value={stats.totalUsers}
+                                    icon={<FaUsers />}
+                                    color="#2563EB"
+                                />
 
-                        <StatCard
-                            title="Total Shipments"
-                           value={stats.totalShipments}
-                            icon={<FaBoxOpen />}
-                            color="#7C3AED"
-                        />
+                                <StatCard
+                                    title="Total Shipments"
+                                    value={stats.totalShipments}
+                                    icon={<FaBoxOpen />}
+                                    color="#7C3AED"
+                                />
 
-                        <StatCard
-                            title="Active Deliveries"
-                            value={stats.activeDeliveries}
-                            icon={<FaTruck />}
-                            color="#F59E0B"
-                        />
+                                <StatCard
+                                    title="Active Deliveries"
+                                    value={stats.activeDeliveries}
+                                    icon={<FaTruck />}
+                                    color="#F59E0B"
+                                />
 
-                        <StatCard
-                            title="Delivered Today"
-                           value={stats.deliveredToday}
-                            icon={<FaCheckCircle />}
-                            color="#22C55E"
-                        />
+                                <StatCard
+                                    title="Delivered Today"
+                                    value={stats.deliveredToday}
+                                    icon={<FaCheckCircle />}
+                                    color="#22C55E"
+                                />
 
-                    </div>
+                            </div>
 
-                    {/* Shipment Table */}
+                            {/* Shipment Table */}
 
-                    <ShipmentTable searchTerm={searchTerm} />
+                            <ShipmentTable searchTerm={searchTerm} />
 
-                    {/* Charts */}
+                            {/* Charts */}
 
-                    <AnalyticsSection />
+                            <AnalyticsSection />
+                        </>
+                    )}
 
-                    {/* Bottom Section */}
+                    {/* Shipments view */}
+                    {section === 'shipments' && (
+                        <ShipmentTable searchTerm={searchTerm} />
+                    )}
 
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "25px",
-                            marginTop: "30px",
-                            marginBottom: "30px"
-                        }}
-                    >
+                    {/* Users view */}
+                    {section === 'users' && (
+                        <UsersTable />
+                    )}
 
-                        <QuickActions />
+                    {/* Bottom Section (visible only on Dashboard view) */}
+                    {section === 'dashboard' && (
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: "25px",
+                                marginTop: "30px",
+                                marginBottom: "30px"
+                            }}
+                        >
 
-                        <RecentActivities />
+                            <QuickActions />
 
-                    </div>
+                            <RecentActivities />
+
+                        </div>
+                    )}
 
                 </div>
 

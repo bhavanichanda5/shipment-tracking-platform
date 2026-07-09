@@ -16,8 +16,9 @@ import { getMonthlyShipmentOverview, getShipmentStatusCounts } from "../services
 import "../styles/AnalyticsSection.css";
 
 const COLORS=[
-    "#22C55E",
+    // swap: previously green then blue; now blue then green
     "#2563EB",
+    "#22C55E",
     "#F59E0B",
     "#EF4444"
 ];

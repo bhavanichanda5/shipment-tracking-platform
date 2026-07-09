@@ -41,6 +41,7 @@ function ShipmentTable({ searchTerm = "" }) {
 
             loadShipments();
             window.dispatchEvent(new Event("analytics:update"));
+            window.dispatchEvent(new Event("activities:update"));
             setEditingShipment(null);
             setShowModal(false);
         } catch (error) {
@@ -59,6 +60,7 @@ function ShipmentTable({ searchTerm = "" }) {
             alert("Shipment Deleted Successfully");
             loadShipments();
             window.dispatchEvent(new Event("analytics:update"));
+            window.dispatchEvent(new Event("activities:update"));
         } catch (error) {
             console.log(error);
             alert("Failed to delete shipment");
@@ -114,12 +116,36 @@ function ShipmentTable({ searchTerm = "" }) {
                             <td>{shipment.origin}</td>
                             <td>{shipment.destination}</td>
                             <td>
-                                <span className={`status ${shipment.status.toLowerCase()}`}>
-                                    {shipment.status
-                                        .toLowerCase()
-                                        .replace("_", " ")
-                                        .replace(/\b\w/g, (c) => c.toUpperCase())}
-                                </span>
+                                {(() => {
+                                    const raw = String(shipment.status || '').toUpperCase().trim();
+                                    let statusKey;
+                                    switch (raw) {
+                                        case 'IN_TRANSIT':
+                                        case 'IN TRANSIT':
+                                        case 'IN-TRANSIT':
+                                            statusKey = 'in_transit';
+                                            break;
+                                        case 'DELIVERED':
+                                            statusKey = 'delivered';
+                                            break;
+                                        case 'PENDING':
+                                            statusKey = 'pending';
+                                            break;
+                                        case 'CANCELLED':
+                                            statusKey = 'cancelled';
+                                            break;
+                                        default:
+                                            statusKey = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                                    }
+
+                                    const display = raw.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+                                    return (
+                                        <span className={`status ${statusKey}`}>
+                                            {display}
+                                        </span>
+                                    );
+                                })()}
                             </td>
                             <td>{shipment.deliveryDate}</td>
                             <td>
