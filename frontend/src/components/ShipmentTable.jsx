@@ -40,6 +40,7 @@ function ShipmentTable({ searchTerm = "" }) {
             }
 
             loadShipments();
+            window.dispatchEvent(new Event("analytics:update"));
             setEditingShipment(null);
             setShowModal(false);
         } catch (error) {
@@ -57,6 +58,7 @@ function ShipmentTable({ searchTerm = "" }) {
             await deleteShipment(id);
             alert("Shipment Deleted Successfully");
             loadShipments();
+            window.dispatchEvent(new Event("analytics:update"));
         } catch (error) {
             console.log(error);
             alert("Failed to delete shipment");

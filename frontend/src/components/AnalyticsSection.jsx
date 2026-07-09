@@ -11,27 +11,9 @@ import {
     Cell
 } from "recharts";
 
+import { useEffect, useState } from "react";
+import { getMonthlyShipmentOverview, getShipmentStatusCounts } from "../services/analyticsService";
 import "../styles/AnalyticsSection.css";
-
-const monthlyData = [
-
-    { month:"Jan", shipments:120 },
-    { month:"Feb", shipments:180 },
-    { month:"Mar", shipments:240 },
-    { month:"Apr", shipments:310 },
-    { month:"May", shipments:390 },
-    { month:"Jun", shipments:470 }
-
-];
-
-const statusData=[
-
-    {name:"Delivered",value:65},
-    {name:"Transit",value:20},
-    {name:"Pending",value:10},
-    {name:"Cancelled",value:5}
-
-];
 
 const COLORS=[
     "#22C55E",
@@ -41,6 +23,43 @@ const COLORS=[
 ];
 
 function AnalyticsSection(){
+    const [monthlyData, setMonthlyData] = useState([]);
+    const [statusData, setStatusData] = useState([]);
+
+    useEffect(() => {
+        fetchAnalytics();
+
+        const refreshCharts = () => {
+            fetchAnalytics();
+        };
+
+        window.addEventListener("analytics:update", refreshCharts);
+
+        return () => {
+            window.removeEventListener("analytics:update", refreshCharts);
+        };
+    }, []);
+
+    const fetchAnalytics = async () => {
+        try {
+            const [monthlyOverview, statusCounts] = await Promise.all([
+                getMonthlyShipmentOverview(),
+                getShipmentStatusCounts()
+            ]);
+
+            setMonthlyData(monthlyOverview.map(entry => ({
+                month: entry.month,
+                shipments: entry.shipments
+            })));
+
+            setStatusData(statusCounts.map(entry => ({
+                name: entry.status.replace("_", " "),
+                value: entry.count
+            })));
+        } catch (error) {
+            console.error("Failed to load analytics", error);
+        }
+    };
 
     return(
 
