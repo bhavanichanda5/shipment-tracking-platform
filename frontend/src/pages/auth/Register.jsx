@@ -12,52 +12,72 @@ function Register() {
 
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        role: "CUSTOMER"
+   const [formData, setFormData] = useState({
+
+        name:"",
+
+        username:"",
+
+        password:"",
+
+        confirmPassword:"",
+
+        role:"CUSTOMER"
+
     });
 
     const handleChange = (e) => {
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+            setFormData({
+                ...formData,
+                [e.target.name]: e.target.value
+            });
 
-    };
+        };
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
+
             alert("Passwords do not match");
             return;
-        }
 
-        const registerRequest = {
-            username: formData.email,   // backend expects username
-            password: formData.password,
-            role: formData.role
-        };
+        }
 
         try {
 
-            const response = await register(registerRequest);
+            const response = await register({
 
-            alert(response);
+                name: formData.name,
 
-            navigate("/login");
+                username: formData.username,
+
+                password: formData.password,
+
+                role: formData.role
+
+            });
+
+            if (response.name) {
+                localStorage.setItem("name", response.name);
+                window.dispatchEvent(new Event("nameChanged"));
+            }
+            alert(response.message);
 
         } catch (error) {
 
+            console.log(error);
+
             if (error.response) {
-                alert(error.response.data);
+
+                alert(error.response.data.message || error.response.data);
+
             } else {
+
                 alert(error.message);
+
             }
 
         }
@@ -96,7 +116,7 @@ function Register() {
 
                             <input
                                 type="text"
-                                name="fullName"
+                                name="name"
                                 placeholder="Full Name"
                                 value={formData.fullName}
                                 onChange={handleChange}
@@ -110,10 +130,10 @@ function Register() {
                             <FaEnvelope className="icon"/>
 
                             <input
-                                type="email"
-                                name="email"
-                                placeholder="Email Address"
-                                value={formData.email}
+                                type="text"
+                                name="username"
+                                placeholder="Username"
+                                value={formData.username}
                                 onChange={handleChange}
                                 required
                             />

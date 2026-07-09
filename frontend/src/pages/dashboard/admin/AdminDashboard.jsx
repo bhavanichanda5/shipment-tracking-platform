@@ -1,0 +1,180 @@
+import Sidebar from "../../../components/Sidebar";
+import Navbar from "../../../components/Navbar";
+import StatCard from "../../../components/StatCard";
+import ShipmentTable from "../../../components/ShipmentTable";
+import AnalyticsSection from "../../../components/AnalyticsSection";
+import QuickActions from "../../../components/QuickActions";
+import RecentActivities from "../../../components/RecentActivities";
+
+import { 
+    useEffect, useState 
+} from "react";
+
+import {
+     getDashboardStats
+     } from "../../../services/adminService";
+
+import {
+    FaUsers,
+    FaBoxOpen,
+    FaTruck,
+    FaCheckCircle
+} from "react-icons/fa";
+
+import "../../../styles/StatCard.css";
+
+function AdminDashboard() {
+
+
+    const [stats, setStats] = useState({
+
+        totalUsers: 0,
+
+        totalShipments: 0,
+
+        activeDeliveries: 0,
+
+        deliveredToday: 0
+
+    });
+
+    useEffect(() => {
+
+        loadDashboard();
+
+        }, []);
+
+        const loadDashboard = async () => {
+
+            try {
+
+                const response = await getDashboardStats();
+
+                setStats(response);
+
+            }
+
+            catch(error){
+
+                console.log(error);
+
+            }
+
+        };
+
+    return (
+
+        <div
+            style={{
+                display: "flex",
+                height: "100vh",
+                background: "#f1f5f9"
+            }}
+        >
+
+            {/* Sidebar */}
+
+            <Sidebar />
+
+            {/* Right Content */}
+
+            <div
+                style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden"
+                }}
+            >
+
+                {/* Navbar */}
+
+                <Navbar />
+
+                {/* Scrollable Content */}
+
+                <div
+                    style={{
+                        flex: 1,
+                        overflowY: "auto",
+                        padding: "25px"
+                    }}
+                >
+
+                    <h1>Welcome Admin 👋</h1>
+
+                    <p>
+                        Manage shipments, users and logistics from one place.
+                    </p>
+
+                    {/* Statistics */}
+
+                    <div className="stats-container">
+
+                        <StatCard
+                            title="Total Users"
+                            value={stats.totalUsers}
+                            icon={<FaUsers />}
+                            color="#2563EB"
+                        />
+
+                        <StatCard
+                            title="Total Shipments"
+                           value={stats.totalShipments}
+                            icon={<FaBoxOpen />}
+                            color="#7C3AED"
+                        />
+
+                        <StatCard
+                            title="Active Deliveries"
+                            value={stats.activeDeliveries}
+                            icon={<FaTruck />}
+                            color="#F59E0B"
+                        />
+
+                        <StatCard
+                            title="Delivered Today"
+                           value={stats.deliveredToday}
+                            icon={<FaCheckCircle />}
+                            color="#22C55E"
+                        />
+
+                    </div>
+
+                    {/* Shipment Table */}
+
+                    <ShipmentTable />
+
+                    {/* Charts */}
+
+                    <AnalyticsSection />
+
+                    {/* Bottom Section */}
+
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "25px",
+                            marginTop: "30px",
+                            marginBottom: "30px"
+                        }}
+                    >
+
+                        <QuickActions />
+
+                        <RecentActivities />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
+
+}
+
+export default AdminDashboard;

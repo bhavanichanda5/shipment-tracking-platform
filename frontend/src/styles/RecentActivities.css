@@ -1,0 +1,27 @@
+.activity-card{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 18px rgba(0,0,0,.08);
+
+}
+
+.activity-card ul{
+
+    margin-top:20px;
+
+    list-style:none;
+
+}
+
+.activity-card li{
+
+    padding:12px 0;
+
+    border-bottom:1px solid #eee;
+
+}

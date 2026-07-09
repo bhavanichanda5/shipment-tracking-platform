@@ -40,14 +40,41 @@ function Login() {
             const response = await login(formData);
 
             localStorage.setItem("token", response.token);
-            localStorage.setItem("username", formData.username);
+            localStorage.setItem("username", response.username);
+            localStorage.setItem("name", response.name || "");
+            localStorage.setItem("role", response.role);
+            window.dispatchEvent(new Event("nameChanged"));
 
-            navigate("/dashboard");
+            switch(response.role){
+
+                case "ADMIN":
+                    navigate("/admin");
+                    break;
+
+                case "CUSTOMER":
+                    navigate("/customer");
+                    break;
+
+                case "BUSINESS_CLIENT":
+                    navigate("/business_client");
+                    break;
+
+                case "LOGISTICS_OPERATOR":
+                    navigate("/logistics_operator");
+                    break;
+
+                case "SUPPORT_AGENT":
+                    navigate("/support_agent");
+                    break;
+
+                default:
+                    navigate("/login");
+            }
 
         } catch (error) {
 
             if (error.response) {
-                alert(error.response.data);
+                alert(error.response.data.message || error.response.data);
             } else {
                 alert(error.message);
             }
