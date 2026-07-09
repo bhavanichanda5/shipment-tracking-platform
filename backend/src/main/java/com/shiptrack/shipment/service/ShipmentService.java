@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.shiptrack.activity.service.ActivityService;
 import com.shiptrack.shipment.entity.Shipment;
 import com.shiptrack.shipment.repository.ShipmentRepository;
 
@@ -11,10 +12,12 @@ import com.shiptrack.shipment.repository.ShipmentRepository;
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
+    private final ActivityService activityService;
 
-    public ShipmentService(ShipmentRepository shipmentRepository) {
+    public ShipmentService(ShipmentRepository shipmentRepository, ActivityService activityService) {
 
         this.shipmentRepository = shipmentRepository;
+        this.activityService = activityService;
 
     }
 
@@ -30,7 +33,11 @@ public class ShipmentService {
             shipment.setTrackingId(generateTrackingId());
         }
 
-        return shipmentRepository.save(shipment);
+        Shipment saved = shipmentRepository.save(shipment);
+        try {
+            activityService.save(null, "SHIPMENT_CREATED", "Shipment " + saved.getTrackingId() + " created");
+        } catch (Exception ignored) {}
+        return saved;
 
     }
 
@@ -47,7 +54,11 @@ public class ShipmentService {
         existingShipment.setShipmentDate(shipment.getShipmentDate());
         existingShipment.setDeliveryDate(shipment.getDeliveryDate());
 
-        return shipmentRepository.save(existingShipment);
+        Shipment saved = shipmentRepository.save(existingShipment);
+        try {
+            activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
+        } catch (Exception ignored) {}
+        return saved;
 
     }
 
@@ -55,6 +66,10 @@ public class ShipmentService {
         if (!shipmentRepository.existsById(id)) {
             throw new RuntimeException("Shipment not found");
         }
+        // capture tracking id for activity
+        shipmentRepository.findById(id).ifPresent(s -> {
+            try { activityService.save(null, "SHIPMENT_DELETED", "Shipment " + s.getTrackingId() + " deleted"); } catch (Exception ignored) {}
+        });
         shipmentRepository.deleteById(id);
     }
 

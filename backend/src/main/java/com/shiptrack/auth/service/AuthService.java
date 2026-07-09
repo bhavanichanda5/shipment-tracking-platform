@@ -2,10 +2,11 @@ package com.shiptrack.auth.service;
 
 import java.util.Optional;
 
-import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.shiptrack.activity.service.ActivityService;
 import com.shiptrack.auth.dto.AuthResponse;
 import com.shiptrack.auth.dto.LoginRequest;
 import com.shiptrack.auth.dto.RegisterRequest;
@@ -18,14 +19,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final ActivityService activityService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       ActivityService activityService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.activityService = activityService;
     }
 
     // Register
@@ -44,14 +48,17 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+        try {
+            activityService.save(user.getUsername(), "USER_REGISTERED", "User registered: " + user.getUsername());
+        } catch (Exception ignored) {}
 
         return AuthResponse.builder()
-                .message("User Registered Successfully")
-                .name(user.getName())
-                .token(null)
-                .username(user.getUsername())
-                .role(user.getRole())
-                .build();
+            .message("User Registered Successfully")
+            .name(user.getName())
+            .token(null)
+            .username(user.getUsername())
+            .role(user.getRole())
+            .build();
     }
 
     // Login
