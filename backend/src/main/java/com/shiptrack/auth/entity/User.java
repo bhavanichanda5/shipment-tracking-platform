@@ -31,6 +31,10 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Allow null during schema migration; existing rows may not have a name
+    @Column(nullable = true)
+    private String name;
+
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 

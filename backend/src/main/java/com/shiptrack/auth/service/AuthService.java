@@ -2,6 +2,7 @@ package com.shiptrack.auth.service;
 
 import java.util.Optional;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,9 +28,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    // ===========================
     // Register
-    // ===========================
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -38,6 +37,7 @@ public class AuthService {
         }
 
         User user = User.builder()
+                .name(request.getName())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
@@ -47,15 +47,14 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .message("User Registered Successfully")
+                .name(user.getName())
                 .token(null)
                 .username(user.getUsername())
                 .role(user.getRole())
                 .build();
     }
 
-    // ===========================
     // Login
-    // ===========================
 
     public AuthResponse login(LoginRequest request) {
 
@@ -68,21 +67,19 @@ public class AuthService {
 
         User user = optionalUser.get();
 
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword())) {
-
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid Password");
         }
 
-        String token = jwtService.generateToken(user.getUsername());
+     
+        String token = jwtService.generateToken(user);
 
         return AuthResponse.builder()
-                .message("Login Successful")
                 .token(token)
+                .name(user.getName())          // <-- VERY IMPORTANT
                 .username(user.getUsername())
                 .role(user.getRole())
+                .message("Login Successful")
                 .build();
     }
-
 }

@@ -15,7 +15,9 @@ import com.shiptrack.auth.entity.Role;
 @Builder
 public class AuthResponse {
 
-     private String message;
+    private String name;
+
+    private String message;
 
     private String token;
 

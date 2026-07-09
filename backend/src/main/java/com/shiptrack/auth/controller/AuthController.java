@@ -39,13 +39,15 @@ public class AuthController
     }
 
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+   @PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 
-        AuthResponse response = authService.login(request);
+    System.out.println("******** LOGIN API HIT ********");
 
-        return ResponseEntity.ok(response);
-    }
+    AuthResponse response = authService.login(request);
+
+    return ResponseEntity.ok(response);
+}
 
     @GetMapping("/profile")
     public String profile(Authentication authentication) {
