@@ -8,7 +8,7 @@ import {
     FaUserCircle
 } from "react-icons/fa";
 
-function Navbar() {
+function Navbar({ searchTerm, onSearchChange }) {
 
     const [name, setName] = useState(() => {
         return localStorage.getItem("name") || "User";
@@ -56,7 +56,9 @@ function Navbar() {
 
                     <input
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Search by Tracking ID"
+                        value={searchTerm}
+                        onChange={(e) => onSearchChange(e.target.value)}
                     />
 
                 </div>

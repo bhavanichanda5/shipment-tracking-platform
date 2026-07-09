@@ -11,7 +11,7 @@ import {
     deleteShipment
 } from "../services/shipmentService";
 
-function ShipmentTable() {
+function ShipmentTable({ searchTerm = "" }) {
     const [shipments, setShipments] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingShipment, setEditingShipment] = useState(null);
@@ -97,7 +97,14 @@ function ShipmentTable() {
                 </thead>
 
                 <tbody>
-                    {shipments.map((shipment) => (
+                    {shipments
+                        .filter((shipment) =>
+                            !searchTerm ||
+                            shipment.trackingId
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase())
+                        )
+                        .map((shipment) => (
                         <tr key={shipment.id}>
                             <td>{shipment.id}</td>
                             <td>{shipment.trackingId}</td>

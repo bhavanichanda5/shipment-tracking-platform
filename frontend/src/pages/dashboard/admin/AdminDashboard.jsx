@@ -38,6 +38,8 @@ function AdminDashboard() {
 
     });
 
+    const [searchTerm, setSearchTerm] = useState("");
+
     useEffect(() => {
 
         loadDashboard();
@@ -89,7 +91,7 @@ function AdminDashboard() {
 
                 {/* Navbar */}
 
-                <Navbar />
+                <Navbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
                 {/* Scrollable Content */}
 
@@ -143,7 +145,7 @@ function AdminDashboard() {
 
                     {/* Shipment Table */}
 
-                    <ShipmentTable />
+                    <ShipmentTable searchTerm={searchTerm} />
 
                     {/* Charts */}
 
