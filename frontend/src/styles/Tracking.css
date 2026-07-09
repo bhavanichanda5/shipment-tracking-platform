@@ -1,0 +1,297 @@
+.tracking-view {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.tracking-header h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #0f172a;
+}
+
+.tracking-header p {
+    margin: 10px 0 0;
+    color: #475569;
+    max-width: 620px;
+}
+
+.tracking-meta {
+    display: flex;
+    gap: 8px;
+    background: #eef2ff;
+    padding: 14px 18px;
+    border-radius: 12px;
+    align-items: center;
+    color: #334155;
+    font-weight: 600;
+}
+
+.tracking-search-panel {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.tracking-search-panel input,
+.tracking-search-panel label input {
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.tracking-search-panel input[type="text"] {
+    flex: 1;
+}
+
+.tracking-date-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tracking-date-controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    color: #475569;
+    gap: 6px;
+}
+
+.tracking-search-panel button {
+    padding: 14px 22px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.tracking-error {
+    padding: 14px 18px;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.tracking-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.tracking-summary div {
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.tracking-summary strong {
+    font-size: 24px;
+    color: #0f172a;
+}
+
+.tracking-list {
+    display: grid;
+    gap: 16px;
+}
+
+.tracking-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.tracking-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.tracking-card-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #0f172a;
+}
+
+.tracking-card-header span {
+    display: block;
+    color: #475569;
+    margin-top: 6px;
+    font-size: 15px;
+}
+
+.status-pill {
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: white;
+    text-transform: capitalize;
+}
+
+.status-pill.in_transit,
+.status-pill.in-transit,
+.status-pill.in transit {
+    background: #2563eb;
+}
+
+.status-pill.delivered {
+    background: #16a34a;
+}
+
+.status-pill.pending {
+    background: #d97706;
+}
+
+.status-pill.cancelled {
+    background: #dc2626;
+}
+
+.tracking-card-body {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.tracking-card-body div {
+    min-width: 0;
+}
+
+.tracking-card-body label {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.tracking-card-body p {
+    margin: 0;
+    color: #0f172a;
+    font-size: 16px;
+}
+
+.tracking-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tracking-step-line {
+    position: relative;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.tracking-step-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb 0%, #22c55e 100%);
+    transition: width 0.4s ease;
+}
+
+.tracking-step-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid #e2e8f0;
+    background: white;
+    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.tracking-step-dot.completed {
+    background: #22c55e;
+    border-color: #16a34a;
+}
+
+.tracking-step-dot.active {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.tracking-step-dot.cancelled {
+    background: #f97316;
+    border-color: #dc2626;
+}
+
+.tracking-step-labels {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.tracking-step-label {
+    text-align: center;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.tracking-card-footer {
+    display: flex;
+    justify-content: space-between;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.tracking-loading,
+.tracking-empty {
+    padding: 18px;
+    border-radius: 16px;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px dashed #cbd5e1;
+}
+
+@media (max-width: 980px) {
+    .tracking-card-body {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .tracking-header,
+    .tracking-search-panel,
+    .tracking-card-body {
+        flex-direction: column;
+    }
+
+    .tracking-header,
+    .tracking-search-panel {
+        align-items: stretch;
+    }
+
+    .tracking-card-body {
+        grid-template-columns: 1fr;
+    }
+}

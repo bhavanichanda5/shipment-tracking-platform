@@ -6,6 +6,10 @@ import AnalyticsSection from "../../../components/AnalyticsSection";
 import UsersTable from "../../../components/UsersTable";
 import QuickActions from "../../../components/QuickActions";
 import RecentActivities from "../../../components/RecentActivities";
+import Tracking from "../../tracking/Tracking";
+import Delivery from "../../delivery/Delivery";
+import Reports from "../../../pages/reports/Reports";
+import Analytics from "../../../pages/analytics/Analytics";
 
 import { 
     useEffect, useState 
@@ -78,7 +82,7 @@ function AdminDashboard() {
 
             {/* Sidebar */}
 
-            <Sidebar onSelect={setSection} />
+            <Sidebar onSelect={setSection} activeSection={section} />
 
             {/* Right Content */}
 
@@ -166,6 +170,23 @@ function AdminDashboard() {
                     {/* Users view */}
                     {section === 'users' && (
                         <UsersTable />
+                    )}
+
+                    {/* Tracking view */}
+                    {section === 'tracking' && (
+                        <Tracking />
+                    )}
+
+                    {section === 'delivery' && (
+                        <Delivery />
+                    )}
+
+                    {section === 'analytics' && (
+                        <Analytics />
+                    )}
+
+                    {section === 'reports' && (
+                        <Reports />
                     )}
 
                     {/* Bottom Section (visible only on Dashboard view) */}

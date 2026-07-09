@@ -9,6 +9,9 @@ import CustomerDashboard from "./pages/dashboard/customer/CustomerDashboard";
 import BusinessDashboard from "./pages/dashboard/business_client/BusinessDashboard";
 import LogisticsDashboard from "./pages/dashboard/logistics_operator/LogisticsDashboard";
 import SupportDashboard from "./pages/dashboard/support_agent/SupportDashboard";
+import Tracking from "./pages/tracking/Tracking";
+import Delivery from "./pages/delivery/Delivery";
+import Logout from "./pages/auth/Logout";
 
 function App() {
     return (
@@ -22,7 +25,7 @@ function App() {
 
                 <Route path="/register" element={<Register />} />
 
-                // Added the dashboard routes here
+                {/* Dashboard routes */}
                 <Route
                     path="/admin"
                     element={
@@ -68,6 +71,25 @@ function App() {
                     }
                 />
 
+                <Route
+                    path="/tracking"
+                    element={
+                        <ProtectedRoute>
+                            <Tracking />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/delivery"
+                    element={
+                        <ProtectedRoute>
+                            <Delivery />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route path="/logout" element={<Logout />} />
             </Routes>
 
         </BrowserRouter>

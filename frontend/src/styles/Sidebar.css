@@ -81,6 +81,36 @@
 
     transition:.25s;
 
+    position: relative;
+
+}
+
+.sidebar li::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    bottom: 0;
+
+    width: 4px;
+
+    border-radius: 0 4px 4px 0;
+
+    background: transparent;
+
+    transition: background .25s ease;
+
+}
+
+.sidebar li.active::before {
+
+    background: #2563eb;
+
 }
 
 .sidebar li:hover{
