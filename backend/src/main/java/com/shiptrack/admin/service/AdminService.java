@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.shiptrack.admin.dto.DashboardResponse;
 import com.shiptrack.admin.dto.MonthlyShipmentOverviewResponse;
 import com.shiptrack.admin.dto.ShipmentStatusCountResponse;
+import com.shiptrack.admin.shipment.entity.ShipmentStatus;
+import com.shiptrack.admin.shipment.repository.ShipmentRepository;
 import com.shiptrack.auth.repository.UserRepository;
-import com.shiptrack.shipment.entity.ShipmentStatus;
-import com.shiptrack.shipment.repository.ShipmentRepository;
 
 @Service
 public class AdminService {

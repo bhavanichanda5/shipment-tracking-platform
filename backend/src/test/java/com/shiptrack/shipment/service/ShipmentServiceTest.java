@@ -11,8 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.shiptrack.shipment.entity.Shipment;
-import com.shiptrack.shipment.repository.ShipmentRepository;
+import com.shiptrack.admin.shipment.entity.Shipment;
+import com.shiptrack.admin.shipment.repository.ShipmentRepository;
+import com.shiptrack.admin.shipment.service.ShipmentService;
 
 @ExtendWith(MockitoExtension.class)
 class ShipmentServiceTest {

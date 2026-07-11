@@ -1,12 +1,12 @@
-package com.shiptrack.shipment.service;
+package com.shiptrack.admin.shipment.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.shiptrack.activity.service.ActivityService;
-import com.shiptrack.shipment.entity.Shipment;
-import com.shiptrack.shipment.repository.ShipmentRepository;
+import com.shiptrack.admin.shipment.entity.Shipment;
+import com.shiptrack.admin.shipment.repository.ShipmentRepository;
 
 @Service
 public class ShipmentService {

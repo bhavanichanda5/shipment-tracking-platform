@@ -1,4 +1,4 @@
-package com.shiptrack.shipment.repository;
+package com.shiptrack.admin.shipment.repository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.shiptrack.shipment.entity.Shipment;
-import com.shiptrack.shipment.entity.ShipmentStatus;
+import com.shiptrack.admin.shipment.entity.Shipment;
+import com.shiptrack.admin.shipment.entity.ShipmentStatus;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 

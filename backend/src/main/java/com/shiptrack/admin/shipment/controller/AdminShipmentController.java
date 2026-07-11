@@ -1,19 +1,19 @@
-package com.shiptrack.shipment.controller;
+package com.shiptrack.admin.shipment.controller;
 
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.shiptrack.shipment.entity.Shipment;
-import com.shiptrack.shipment.service.ShipmentService;
+import com.shiptrack.admin.shipment.entity.Shipment;
+import com.shiptrack.admin.shipment.service.ShipmentService;
 
 @RestController
 @RequestMapping("/api/shipments")
-public class ShipmentController {
+public class AdminShipmentController {
 
     private final ShipmentService shipmentService;
 
-    public ShipmentController(ShipmentService shipmentService) {
+    public AdminShipmentController(ShipmentService shipmentService) {
 
         this.shipmentService = shipmentService;
 

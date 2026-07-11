@@ -1,4 +1,4 @@
-package com.shiptrack.shipment.entity;
+package com.shiptrack.admin.shipment.entity;
 
 public enum ShipmentStatus {
 

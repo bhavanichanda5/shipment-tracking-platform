@@ -1,6 +1,7 @@
 package com.shiptrack.admin.dto;
 
-import com.shiptrack.shipment.entity.ShipmentStatus;
+import com.shiptrack.admin.shipment.entity.ShipmentStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
