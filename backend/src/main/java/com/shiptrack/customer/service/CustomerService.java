@@ -116,20 +116,14 @@ public class CustomerService {
                 }
 
                 return new ShipmentTrackingResponse(
-
-                        shipment.getTrackingId(),
-
-                        shipment.getOrigin(),
-
-                        shipment.getDestination(),
-
-                        trackingId, shipment.getStatus(),
-
-                        shipment.getShipmentDate(),
-
-                        shipment.getDeliveryDate()
-
-                );
+                shipment.getTrackingId(),
+                user.getUsername(),           // Pass the customer name here
+                shipment.getOrigin(),         // Pass origin here
+                shipment.getDestination(),    // Pass destination here
+                shipment.getStatus(),
+                shipment.getShipmentDate(),
+                shipment.getDeliveryDate()
+        );
 
         }
 

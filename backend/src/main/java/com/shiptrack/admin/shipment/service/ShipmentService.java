@@ -35,20 +35,17 @@ public class ShipmentService {
 
     }
 
-    public Shipment addShipment(Shipment shipment) {
-
+public Shipment addShipment(Shipment shipment) {
     if (shipment.getTrackingId() == null || shipment.getTrackingId().isBlank()) {
         shipment.setTrackingId(generateTrackingId());
     }
 
-    if (shipment.getCustomerId() != null) {
-
-        User customer = userRepository.findById(shipment.getCustomerId())
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found"));
+    if (shipment.getCustomerId() != null && shipment.getCustomerId().getId() != null) {
+        // FIX: Pass the inner Long ID (.getId()) to the repository, not the object itself
+        User customer = userRepository.findById(shipment.getCustomerId().getId())
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         shipment.setCustomerId(customer);
-
         shipment.setCustomerName(customer.getName());
     }
 
@@ -59,18 +56,23 @@ public class ShipmentService {
                 null,
                 "SHIPMENT_CREATED",
                 "Shipment " + saved.getTrackingId() + " created");
-    } catch (Exception ignored) {
-    }
+    } catch (Exception ignored) {}
 
     return saved;
 }
 
-   public Shipment updateShipment(Long id, Shipment shipment) {
+public Shipment updateShipment(Long id, Shipment shipment) {
     Shipment existingShipment = shipmentRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-    // Set the entire User object relation directly
-    existingShipment.setCustomerId(shipment.getCustomerId());
+    if (shipment.getCustomerId() != null && shipment.getCustomerId().getId() != null) {
+        // FIX: Fetch the managed User from the database using the internal Long ID
+        User customer = userRepository.findById(shipment.getCustomerId().getId())
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        existingShipment.setCustomerId(customer);
+    } else {
+        existingShipment.setCustomerId(null);
+    }
     
     existingShipment.setCustomerName(shipment.getCustomerName());
     existingShipment.setOrigin(shipment.getOrigin());
