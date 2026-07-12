@@ -22,39 +22,33 @@ function AddShipmentModal({
 
     });
 
-    useEffect(() => {
-
-        if (shipment) {
-
-            setShipmentData({
-
-                trackingId: shipment.trackingId,
-                customerName: shipment.customerName,
-                origin: shipment.origin,
-                destination: shipment.destination,
-                status: shipment.status,
-                shipmentDate: shipment.shipmentDate,
-                deliveryDate: shipment.deliveryDate
-
-            });
-
-        } else {
-
-            setShipmentData({
-
-                customeId:"",
-                customerName: "",
-                origin: "",
-                destination: "",
-                status: "PENDING",
-                shipmentDate: "",
-                deliveryDate: ""
-
-            });
-
-        }
-
-    }, [shipment]);
+useEffect(() => {
+    if (shipment) {
+        setShipmentData({
+            trackingId: shipment.trackingId,
+            // Extract the 'id' from inside the customerId object safely
+            customerId: shipment.customerId && typeof shipment.customerId === 'object'
+                ? shipment.customerId.id 
+                : (shipment.customerId || ""),
+            customerName: shipment.customerName,
+            origin: shipment.origin,
+            destination: shipment.destination,
+            status: shipment.status,
+            shipmentDate: shipment.shipmentDate,
+            deliveryDate: shipment.deliveryDate
+        });
+    } else {
+        setShipmentData({
+            customerId: "", 
+            customerName: "",
+            origin: "",
+            destination: "",
+            status: "PENDING",
+            shipmentDate: "",
+            deliveryDate: ""
+        });
+    }
+}, [shipment]);
 
     if (!show) return null;
 
@@ -80,7 +74,7 @@ function AddShipmentModal({
 
             setShipmentData({
 
-                customeId:"",
+                customerId:"",
                 customerName: "",
                 origin: "",
                 destination: "",
@@ -116,7 +110,6 @@ function AddShipmentModal({
 
                 <form onSubmit={handleSubmit}>
                     
-                                    {/*
                     <input
                         name="customerId"
                         placeholder="Customer Id"
@@ -124,7 +117,6 @@ function AddShipmentModal({
                         onChange={handleChange}
                         required
                     />
-                    */}
 
                     <input
                         name="customerName"
