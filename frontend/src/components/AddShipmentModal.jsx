@@ -64,29 +64,33 @@ useEffect(() => {
 
     };
 
-    const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        e.preventDefault();
-
-        await onSave(shipmentData);
-
-        if (!shipment) {
-
-            setShipmentData({
-
-                customerId:"",
-                customerName: "",
-                origin: "",
-                destination: "",
-                status: "PENDING",
-                shipmentDate: "",
-                deliveryDate: ""
-
-            });
-
-        }
-
+    // 1. Construct the payload matching the Spring Boot entity mapping
+    const payload = {
+        ...shipmentData,
+        // Wrap the raw customerId string/number into a User object wrapper
+        customerId: shipmentData.customerId 
+            ? { id: Number(shipmentData.customerId) } 
+            : null
     };
+
+    // 2. Pass the correctly structured payload to your parent save function
+    await onSave(payload);
+
+    if (!shipment) {
+        setShipmentData({
+            customerId: "",
+            customerName: "",
+            origin: "",
+            destination: "",
+            status: "PENDING",
+            shipmentDate: "",
+            deliveryDate: ""
+        });
+    }
+};
 
     return (
 
