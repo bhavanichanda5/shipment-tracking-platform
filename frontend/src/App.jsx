@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Logout from "./pages/auth/Logout";
+
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
@@ -9,12 +11,14 @@ import CustomerDashboard from "./pages/dashboard/customer/CustomerDashboard";
 import BusinessDashboard from "./pages/dashboard/business_client/BusinessDashboard";
 import LogisticsDashboard from "./pages/dashboard/logistics_operator/LogisticsDashboard";
 import SupportDashboard from "./pages/dashboard/support_agent/SupportDashboard";
+
 import Tracking from "./pages/tracking/Tracking";
 import Delivery from "./pages/delivery/Delivery";
-import Logout from "./pages/auth/Logout";
 
 function App() {
+
     return (
+
         <BrowserRouter>
 
             <Routes>
@@ -25,7 +29,8 @@ function App() {
 
                 <Route path="/register" element={<Register />} />
 
-                {/* Dashboard routes */}
+                {/* Admin Dashboard */}
+
                 <Route
                     path="/admin"
                     element={
@@ -34,6 +39,8 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Customer Dashboard */}
 
                 <Route
                     path="/customer"
@@ -44,6 +51,8 @@ function App() {
                     }
                 />
 
+                {/* Business Client */}
+
                 <Route
                     path="/business_client"
                     element={
@@ -52,6 +61,8 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Logistics Operator */}
 
                 <Route
                     path="/logistics_operator"
@@ -62,6 +73,8 @@ function App() {
                     }
                 />
 
+                {/* Support Agent */}
+
                 <Route
                     path="/support_agent"
                     element={
@@ -70,6 +83,8 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Tracking */}
 
                 <Route
                     path="/tracking"
@@ -80,6 +95,8 @@ function App() {
                     }
                 />
 
+                {/* Delivery */}
+
                 <Route
                     path="/delivery"
                     element={
@@ -89,11 +106,19 @@ function App() {
                     }
                 />
 
-                <Route path="/logout" element={<Logout />} />
+                {/* Logout */}
+
+                <Route
+                    path="/logout"
+                    element={<Logout />}
+                />
+
             </Routes>
 
         </BrowserRouter>
+
     );
+
 }
 
 export default App;

@@ -15,13 +15,12 @@ import { useEffect, useState } from "react";
 import { getMonthlyShipmentOverview, getShipmentStatusCounts } from "../services/analyticsService";
 import "../styles/AnalyticsSection.css";
 
-const COLORS=[
-    // swap: previously green then blue; now blue then green
-    "#2563EB",
-    "#22C55E",
-    "#F59E0B",
-    "#EF4444"
-];
+const STATUS_COLORS = {
+    "DELIVERED": "#22C55E",        // Green
+    "IN TRANSIT": "#2563EB",       // Blue
+    "PENDING": "#F59E0B",          // Yellow
+    "CANCELLED": "#EF4444",        // Red
+};
 
 function AnalyticsSection(){
     const [monthlyData, setMonthlyData] = useState([]);
@@ -105,30 +104,33 @@ function AnalyticsSection(){
 
                         <Pie
 
-                            data={statusData}
+                                data={statusData}
 
-                            dataKey="value"
+                                dataKey="value"
 
-                            outerRadius={100}
+                                outerRadius={100}
 
-                            label
+                                label
 
-                        >
+                            >
 
-                            {
+                                {
 
-                                statusData.map((entry,index)=>
+                                    statusData.map((entry, index) => (
 
-                                    <Cell
-                                        key={index}
-                                        fill={COLORS[index]}
-                                    />
+                                        <Cell
 
-                                )
+                                            key={index}
 
-                            }
+                                            fill={STATUS_COLORS[entry.name] || "#94A3B8"}
 
-                        </Pie>
+                                        />
+
+                                    ))
+
+                                }
+
+                            </Pie>
 
                         <Tooltip/>
 

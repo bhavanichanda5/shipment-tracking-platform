@@ -12,6 +12,7 @@ function AddShipmentModal({
 
     const [shipmentData, setShipmentData] = useState({
 
+        customeId:"",
         customerName: "",
         origin: "",
         destination: "",
@@ -41,6 +42,7 @@ function AddShipmentModal({
 
             setShipmentData({
 
+                customeId:"",
                 customerName: "",
                 origin: "",
                 destination: "",
@@ -78,6 +80,7 @@ function AddShipmentModal({
 
             setShipmentData({
 
+                customeId:"",
                 customerName: "",
                 origin: "",
                 destination: "",
@@ -112,10 +115,20 @@ function AddShipmentModal({
                 </h2>
 
                 <form onSubmit={handleSubmit}>
+                    
+                                    {/*
+                    <input
+                        name="customerId"
+                        placeholder="Customer Id"
+                        value={shipmentData.customerId}
+                        onChange={handleChange}
+                        required
+                    />
+                    */}
 
                     <input
                         name="customerName"
-                        placeholder="Customer Name"
+                        placeholder="Customer Username"
                         value={shipmentData.customerName}
                         onChange={handleChange}
                         required
