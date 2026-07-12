@@ -2,17 +2,25 @@ package com.shiptrack.admin.shipment.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.shiptrack.activity.service.ActivityService;
 import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.repository.ShipmentRepository;
+import com.shiptrack.auth.repository.UserRepository;
+
+import com.shiptrack.auth.repository.UserRepository;
+import com.shiptrack.auth.entity.User;
 
 @Service
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final ActivityService activityService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public ShipmentService(ShipmentRepository shipmentRepository, ActivityService activityService) {
 
@@ -29,24 +37,40 @@ public class ShipmentService {
 
     public Shipment addShipment(Shipment shipment) {
 
-        if (shipment.getTrackingId() == null || shipment.getTrackingId().isBlank()) {
-            shipment.setTrackingId(generateTrackingId());
-        }
-
-        Shipment saved = shipmentRepository.save(shipment);
-        try {
-            activityService.save(null, "SHIPMENT_CREATED", "Shipment " + saved.getTrackingId() + " created");
-        } catch (Exception ignored) {}
-        return saved;
-
+    if (shipment.getTrackingId() == null || shipment.getTrackingId().isBlank()) {
+        shipment.setTrackingId(generateTrackingId());
     }
+
+    if (shipment.getCustomerId() != null) {
+
+        User customer = userRepository.findById(shipment.getCustomerId())
+                .orElseThrow(() ->
+                        new RuntimeException("Customer not found"));
+
+        shipment.setCustomerId(customer);
+
+        shipment.setCustomerName(customer.getName());
+    }
+
+    Shipment saved = shipmentRepository.save(shipment);
+
+    try {
+        activityService.save(
+                null,
+                "SHIPMENT_CREATED",
+                "Shipment " + saved.getTrackingId() + " created");
+    } catch (Exception ignored) {
+    }
+
+    return saved;
+}
 
     public Shipment updateShipment(Long id, Shipment shipment) {
 
         Shipment existingShipment = shipmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-        
+        //.setCustomerId(shipment.getCustomerId());
         existingShipment.setCustomerName(shipment.getCustomerName());
         existingShipment.setOrigin(shipment.getOrigin());
         existingShipment.setDestination(shipment.getDestination());

@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.shiptrack.auth.entity.User;
+
 @Entity
 @Table(name = "shipments")
 @Getter
@@ -37,5 +39,10 @@ public class Shipment {
     private LocalDate shipmentDate;
 
     private LocalDate deliveryDate;
+
+   @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private User customerId;
+    
 
 }

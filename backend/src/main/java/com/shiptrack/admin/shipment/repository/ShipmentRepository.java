@@ -2,6 +2,7 @@ package com.shiptrack.admin.shipment.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 
 import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.entity.ShipmentStatus;
+
+import java.util.List;
+import com.shiptrack.auth.entity.User;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
@@ -28,5 +32,9 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     @Query("SELECT s.status, COUNT(s) FROM Shipment s GROUP BY s.status")
     List<Object[]> countShipmentsByStatus();
+
+    List<Shipment> findByCustomerId(User customerId);
+
+    Optional<Shipment> findByTrackingId(String trackingId);
 
 }
