@@ -65,26 +65,26 @@ public class ShipmentService {
     return saved;
 }
 
-    public Shipment updateShipment(Long id, Shipment shipment) {
+   public Shipment updateShipment(Long id, Shipment shipment) {
+    Shipment existingShipment = shipmentRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-        Shipment existingShipment = shipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+    // Set the entire User object relation directly
+    existingShipment.setCustomerId(shipment.getCustomerId());
+    
+    existingShipment.setCustomerName(shipment.getCustomerName());
+    existingShipment.setOrigin(shipment.getOrigin());
+    existingShipment.setDestination(shipment.getDestination());
+    existingShipment.setStatus(shipment.getStatus());
+    existingShipment.setShipmentDate(shipment.getShipmentDate());
+    existingShipment.setDeliveryDate(shipment.getDeliveryDate());
 
-        //.setCustomerId(shipment.getCustomerId());
-        existingShipment.setCustomerName(shipment.getCustomerName());
-        existingShipment.setOrigin(shipment.getOrigin());
-        existingShipment.setDestination(shipment.getDestination());
-        existingShipment.setStatus(shipment.getStatus());
-        existingShipment.setShipmentDate(shipment.getShipmentDate());
-        existingShipment.setDeliveryDate(shipment.getDeliveryDate());
-
-        Shipment saved = shipmentRepository.save(existingShipment);
-        try {
-            activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
-        } catch (Exception ignored) {}
-        return saved;
-
-    }
+    Shipment saved = shipmentRepository.save(existingShipment);
+    try {
+        activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
+    } catch (Exception ignored) {}
+    return saved;
+}
 
     public void deleteShipment(Long id) {
         if (!shipmentRepository.existsById(id)) {
