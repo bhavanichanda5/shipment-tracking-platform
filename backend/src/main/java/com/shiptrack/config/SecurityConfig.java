@@ -34,14 +34,25 @@ public class SecurityConfig {
         http
             .cors(cors -> {})
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
+          .authorizeHttpRequests(auth -> auth
 
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+
+                .requestMatchers("/api/customer/**")
+                .hasRole("CUSTOMER")
+
                 .requestMatchers("/api/admin/**")
                 .hasRole("ADMIN")
+
+                .requestMatchers("/api/business/**")
+                .hasRole("BUSINESS_CLIENT")
+
                 .requestMatchers("/api/operator/**")
                 .hasRole("LOGISTICS_OPERATOR")
+
+                .requestMatchers("/api/support/**")
+                .hasRole("SUPPORT_AGENT")
+
                 .requestMatchers("/api/shipments/**")
                 .hasAnyRole(
                         "ADMIN",
