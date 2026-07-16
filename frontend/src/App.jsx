@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import LandingPage from "./pages/LandingPage";
+
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Logout from "./pages/auth/Logout";
@@ -23,7 +25,7 @@ function App() {
 
             <Routes>
 
-                <Route path="/" element={<Login />} />
+                <Route path="/" element={<LandingPage />} />
 
                 <Route path="/login" element={<Login />} />
 
