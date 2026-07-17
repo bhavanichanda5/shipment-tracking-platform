@@ -653,7 +653,7 @@ function LandingPage() {
 
             <h4>
 
-              Business Client
+              customer
 
             </h4>
 
@@ -711,7 +711,7 @@ function LandingPage() {
 
             <h4>
 
-              Logistics Partner
+              customer
 
             </h4>
 
