@@ -732,7 +732,9 @@ function LandingPage() {
             CALL TO ACTION
       ============================ */}
 
-      <section className="cta-section">
+      <section 
+        id="tracking"
+        className="cta-section">
 
         <div className="cta-content">
 
