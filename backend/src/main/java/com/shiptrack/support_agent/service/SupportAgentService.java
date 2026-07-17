@@ -10,18 +10,24 @@ import com.shiptrack.admin.shipment.repository.ShipmentRepository;
 import com.shiptrack.admin.shipment.service.ShipmentService;
 import com.shiptrack.support_agent.dto.SupportDashboardResponse;
 
+import com.shiptrack.support_agent.repository.TicketRepository;
+import com.shiptrack.support_agent.entity.TicketStatus;
+
 @Service
 public class SupportAgentService {
 
     private final ShipmentRepository shipmentRepository;
     private final ShipmentService shipmentService;
 
+    private final TicketRepository ticketRepository;
+
     public SupportAgentService(
             ShipmentRepository shipmentRepository,
-            ShipmentService shipmentService) {
+            ShipmentService shipmentService, TicketRepository ticketRepository) {
 
         this.shipmentRepository = shipmentRepository;
         this.shipmentService = shipmentService;
+        this.ticketRepository = ticketRepository;
     }
 
     // ==========================
@@ -40,11 +46,11 @@ public class SupportAgentService {
                 shipmentRepository.countByStatus(
                         ShipmentStatus.IN_TRANSIT));
 
-        // Change this later when Ticket module is connected
-        response.setOpenTickets(0);
+        response.setOpenTickets(
+            ticketRepository.countByStatus(TicketStatus.OPEN));
 
-        // Change this later when Ticket module is connected
-        response.setResolvedToday(0);
+        response.setResolvedToday(
+            ticketRepository.countByStatus(TicketStatus.RESOLVED));
 
         return response;
     }
