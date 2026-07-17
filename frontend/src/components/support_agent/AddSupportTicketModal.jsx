@@ -7,24 +7,35 @@ import {
     updateTicket
 } from "../../services/ticketService";
 
-import { getAllShipments } from "../../services/supportService";
+import {
+    getAllShipments,
+    getAllUsers
+} from "../../services/supportService";
 
 function AddSupportTicketModal({
 
     show,
     ticket,
-    onClose,
-    onSave
+    onClose
 
 }) {
 
     const [shipments, setShipments] = useState([]);
 
+    const [customers, setCustomers] = useState([]);
+
     const [ticketData, setTicketData] = useState({
 
-        customerName: "",
-        subject: "",
+        customerId: "",
+
         shipmentId: "",
+
+        subject: "",
+
+        description: "",
+
+        assignedTo: "",
+
         status: "OPEN"
 
     });
@@ -33,7 +44,7 @@ function AddSupportTicketModal({
 
         if (show) {
 
-            loadShipments();
+            loadData();
 
         }
 
@@ -45,14 +56,15 @@ function AddSupportTicketModal({
 
             setTicketData({
 
-                customerName: ticket.customerName || "",
+                customerId: ticket.customerId || "",
+
+                shipmentId: ticket.shipmentId || "",
 
                 subject: ticket.subject || "",
 
-                shipmentId:
-                    ticket.shipment?.id ||
-                    ticket.shipmentId ||
-                    "",
+                description: ticket.description || "",
+
+                assignedTo: ticket.assignedToId || "",
 
                 status: ticket.status || "OPEN"
 
@@ -64,11 +76,15 @@ function AddSupportTicketModal({
 
             setTicketData({
 
-                customerName: "",
+                customerId: "",
+
+                shipmentId: "",
 
                 subject: "",
 
-                shipmentId: "",
+                description: "",
+
+                assignedTo: "",
 
                 status: "OPEN"
 
@@ -78,17 +94,27 @@ function AddSupportTicketModal({
 
     }, [ticket]);
 
-    const loadShipments = async () => {
+    const loadData = async () => {
 
         try {
 
-            const data = await getAllShipments();
+            const shipmentData = await getAllShipments();
 
-            console.log("Shipments =>", data);
+            setShipments(shipmentData);
 
-            setShipments(data);
+            const userData = await getAllUsers();
 
-        } catch (error) {
+            const customerList = userData.filter(
+
+                user => user.role === "CUSTOMER"
+
+            );
+
+            setCustomers(customerList);
+
+        }
+
+        catch (error) {
 
             console.log(error);
 
@@ -112,35 +138,47 @@ function AddSupportTicketModal({
 
         e.preventDefault();
 
+        const payload = {
+
+            customerId: Number(ticketData.customerId),
+
+            shipmentId: Number(ticketData.shipmentId),
+
+            subject: ticketData.subject,
+
+            description: ticketData.description,
+
+            assignedTo:
+
+                ticketData.assignedTo === ""
+
+                    ? null
+
+                    : Number(ticketData.assignedTo),
+
+            status: ticketData.status
+
+        };
+
         try {
 
-            if (onSave) {
+            if (ticket) {
 
-                onSave(ticketData);
+                await updateTicket(ticket.id, payload);
+
+                alert("Ticket Updated Successfully");
 
             }
 
             else {
 
-                if (ticket) {
+                await createTicket(payload);
 
-                    await updateTicket(ticket.id, ticketData);
-
-                    alert("Ticket Updated Successfully");
-
-                }
-
-                else {
-
-                    await createTicket(ticketData);
-
-                    alert("Ticket Created Successfully");
-
-                }
-
-                onClose();
+                alert("Ticket Created Successfully");
 
             }
+
+            onClose();
 
         }
 
@@ -148,7 +186,9 @@ function AddSupportTicketModal({
 
             console.log(error);
 
-            alert("Operation Failed");
+            console.log(error.response);
+
+            alert(JSON.stringify(error.response?.data));
 
         }
 
@@ -167,7 +207,9 @@ function AddSupportTicketModal({
                     {
 
                         ticket
+
                             ? "Update Support Ticket"
+
                             : "Create Support Ticket"
 
                     }
@@ -176,21 +218,51 @@ function AddSupportTicketModal({
 
                 <form onSubmit={handleSubmit}>
 
-                    <input
+                    <label>
 
-                        type="text"
+                        Customer
 
-                        name="customerName"
+                    </label>
 
-                        placeholder="Customer Name"
+                    <select
 
-                        value={ticketData.customerName}
+                        name="customerId"
+
+                        value={ticketData.customerId}
 
                         onChange={handleChange}
 
                         required
 
-                    />
+                    >
+
+                        <option value="">
+
+                            Select Customer
+
+                        </option>
+
+                        {
+
+                            customers.map(customer => (
+
+                                <option
+
+                                    key={customer.id}
+
+                                    value={customer.id}
+
+                                >
+
+                                    {customer.name}
+
+                                </option>
+
+                            ))
+
+                        }
+
+                    </select>
 
                     <label>
 
@@ -218,7 +290,7 @@ function AddSupportTicketModal({
 
                         {
 
-                            shipments.map((shipment) => (
+                            shipments.map(shipment => (
 
                                 <option
 
@@ -249,6 +321,22 @@ function AddSupportTicketModal({
                         value={ticketData.subject}
 
                         onChange={handleChange}
+
+                        required
+
+                    />
+
+                    <textarea
+
+                        name="description"
+
+                        placeholder="Description"
+
+                        value={ticketData.description}
+
+                        onChange={handleChange}
+
+                        rows="4"
 
                         required
 
@@ -323,7 +411,9 @@ function AddSupportTicketModal({
                             {
 
                                 ticket
+
                                     ? "Update Ticket"
+
                                     : "Create Ticket"
 
                             }

@@ -39,6 +39,25 @@ export const getAllShipments = async () => {
 };
 
 // ==============================
+// Get All Users
+// ==============================
+
+export const getAllUsers = async () => {
+
+    const response = await api.get(
+        "/users",
+        {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+        }
+    );
+
+    return response.data;
+
+};
+
+// ==============================
 // Update Shipment
 // ==============================
 

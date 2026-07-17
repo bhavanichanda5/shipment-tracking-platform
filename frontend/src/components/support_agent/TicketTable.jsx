@@ -23,11 +23,13 @@ function TicketTable() {
 
     }, []);
 
-    const loadTickets = async () => {
+   const loadTickets = async () => {
 
         try {
 
             const data = await getAllTickets();
+
+            console.log("Tickets =>", data);
 
             setTickets(data);
 
@@ -178,13 +180,7 @@ function TicketTable() {
                                 </td>
 
                                 <td>
-
-                                    <span className={`status ${ticket.status.toLowerCase()}`}>
-
-                                        {ticket.status}
-
-                                    </span>
-
+                                    {ticket.status}
                                 </td>
 
                                 <td>
