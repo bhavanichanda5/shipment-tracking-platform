@@ -14,8 +14,10 @@ import com.shiptrack.auth.service.AuthService;
 import com.shiptrack.auth.dto.LoginRequest;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController 
