@@ -14,7 +14,7 @@ const defaultCenter = { lat: 20.5937, lng: 78.9629 };
 
 const directionsCache = new Map();
 
-// --- Sub-component for individual Map & Live Metrics ---
+// --- Sub-component: Lazy Loaded Map & Live Metrics ---
 const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => {
   const [directions, setDirections] = useState(null);
   const [truckPos, setTruckPos] = useState(null);
@@ -23,7 +23,6 @@ const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => 
 
   const routeKey = `${shipment.origin}->${shipment.destination}`;
 
-  // Fetch Directions & Calculate Real Distance/ETA
   useEffect(() => {
     if (!isLoaded || !shipment.origin || !shipment.destination || !window.google) return;
 
@@ -53,15 +52,13 @@ const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => 
     );
   }, [isLoaded, shipment.origin, shipment.destination, routeKey, shipment.trackingId]);
 
-  // Extract Route Distance & Dynamic ETA
   const extractMetrics = (result) => {
     if (!result?.routes?.[0]?.legs?.[0]) return;
     const leg = result.routes[0].legs[0];
-    
+
     const totalDistanceKm = (leg.distance.value / 1000).toFixed(1);
     const durationMinutes = Math.round(leg.duration.value / 60);
 
-    // Calculate dynamic estimated arrival time
     const etaDate = new Date();
     etaDate.setMinutes(etaDate.getMinutes() + durationMinutes);
 
@@ -75,7 +72,6 @@ const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => 
     }
   };
 
-  // Handle Map Bounds Fit
   useEffect(() => {
     if (!mapRef.current || !directions) return;
     const bounds = new window.google.maps.LatLngBounds();
@@ -83,7 +79,6 @@ const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => 
     mapRef.current.fitBounds(bounds);
   }, [directions]);
 
-  // Animate Truck Marker
   useEffect(() => {
     if (!directions) return;
 
@@ -110,7 +105,7 @@ const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => 
   return (
     <div className="tracking-map">
       <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "420px", borderRadius: "10px" }}
+        mapContainerStyle={{ width: "100%", height: "380px", borderRadius: "10px" }}
         center={truckPos || defaultCenter}
         zoom={5}
         onLoad={(map) => {
@@ -145,7 +140,6 @@ const calculateDelayPrediction = (shipment, metrics) => {
   const scheduledDate = new Date(shipment.deliveryDate);
   const now = new Date();
 
-  // If scheduled delivery date has passed but status is not DELIVERED -> HIGH DELAY RISK
   if (now > scheduledDate) {
     return {
       risk: "HIGH",
@@ -155,7 +149,6 @@ const calculateDelayPrediction = (shipment, metrics) => {
     };
   }
 
-  // Check remaining hours against live route distance/time
   if (metrics?.durationMinutes) {
     const hoursRemainingInSchedule = (scheduledDate - now) / (1000 * 60 * 60);
     const hoursNeeded = metrics.durationMinutes / 60;
@@ -191,75 +184,21 @@ const getShipmentTimeline = (shipment) => {
 
   if (statusUpper === "CANCELLED") {
     return [
-      {
-        title: "Order Placed",
-        location: shipment.origin,
-        time: shipment.shipmentDate,
-        state: "completed"
-      },
-      {
-        title: "Shipment Cancelled",
-        location: "System / Customer Request",
-        time: shipment.deliveryDate || "Terminated",
-        state: "cancelled"
-      }
+      { title: "Order Placed", location: shipment.origin, time: shipment.shipmentDate, state: "completed" },
+      { title: "Shipment Cancelled", location: "System / Request", time: shipment.deliveryDate || "Terminated", state: "cancelled" }
     ];
   }
 
   return [
-    {
-      title: "Order Confirmed",
-      location: shipment.origin,
-      time: shipment.shipmentDate,
-      state: "completed"
-    },
-    {
-      title: "Picked Up",
-      location: `${shipment.origin} Warehouse`,
-      time: shipment.shipmentDate,
-      state: statusUpper === "PENDING" ? "active" : "completed"
-    },
-    {
-      title: "Current Location",
-      location: statusUpper === "DELIVERED" ? shipment.destination : shipment.origin,
-      time: "Live",
-      state:
-        statusUpper === "IN_TRANSIT"
-          ? "active"
-          : statusUpper === "PENDING"
-          ? "upcoming"
-          : "completed"
-    },
-    {
-      title: "Destination Hub",
-      location: shipment.destination,
-      time: "",
-      state:
-        statusUpper === "OUT_FOR_DELIVERY" || statusUpper === "DELIVERED"
-          ? "completed"
-          : "upcoming"
-    },
-    {
-      title: "Out For Delivery",
-      location: shipment.destination,
-      time: "",
-      state:
-        statusUpper === "OUT_FOR_DELIVERY"
-          ? "active"
-          : statusUpper === "DELIVERED"
-          ? "completed"
-          : "upcoming"
-    },
-    {
-      title: "Delivered",
-      location: shipment.destination,
-      time: shipment.deliveryDate,
-      state: statusUpper === "DELIVERED" ? "completed" : "upcoming"
-    }
+    { title: "Order Confirmed", location: shipment.origin, time: shipment.shipmentDate, state: "completed" },
+    { title: "Picked Up", location: `${shipment.origin} Hub`, time: shipment.shipmentDate, state: statusUpper === "PENDING" ? "active" : "completed" },
+    { title: "Current Location", location: statusUpper === "DELIVERED" ? shipment.destination : shipment.origin, time: "Live", state: statusUpper === "IN_TRANSIT" ? "active" : statusUpper === "PENDING" ? "upcoming" : "completed" },
+    { title: "Destination Hub", location: shipment.destination, time: "", state: statusUpper === "OUT_FOR_DELIVERY" || statusUpper === "DELIVERED" ? "completed" : "upcoming" },
+    { title: "Delivered", location: shipment.destination, time: shipment.deliveryDate, state: statusUpper === "DELIVERED" ? "completed" : "upcoming" }
   ];
 };
 
-// --- Main Component ---
+// --- Main Tracking Component ---
 function Tracking() {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
@@ -267,12 +206,19 @@ function Tracking() {
 
   const [shipments, setShipments] = useState([]);
   const [liveMetrics, setLiveMetrics] = useState({});
+  const [expandedId, setExpandedId] = useState(null);
+
+  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const handleMetricsCalculated = useCallback((trackingId, metrics) => {
     setLiveMetrics((prev) => ({ ...prev, [trackingId]: metrics }));
@@ -295,7 +241,7 @@ function Tracking() {
 
   useEffect(() => {
     loadShipments();
-    const interval = setInterval(loadShipments, 15000);
+    const interval = setInterval(loadShipments, 20000);
     return () => clearInterval(interval);
   }, [loadShipments]);
 
@@ -328,12 +274,28 @@ function Tracking() {
       .sort((a, b) => new Date(b.shipmentDate) - new Date(a.shipmentDate));
   }, [shipments, searchTerm, fromDate, toDate]);
 
+  // Reset to page 1 on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, fromDate, toDate]);
+
+  // Pagination Math
+  const totalPages = Math.ceil(filteredShipments.length / itemsPerPage) || 1;
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentShipments = filteredShipments.slice(indexOfFirst, indexOfLast);
+
+  const toggleExpand = (id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   if (!isLoaded) {
-    return <div className="tracking-loading-screen">Loading Google Maps & ETA Models...</div>;
+    return <div className="tracking-loading-screen">Loading Map Engine & Models...</div>;
   }
 
   return (
     <div className="tracking-view">
+      {/* Header */}
       <div className="tracking-header">
         <div>
           <h1>Live Delivery Monitoring & ETA Insights</h1>
@@ -345,6 +307,7 @@ function Tracking() {
         </div>
       </div>
 
+      {/* Search & Filter Bar */}
       <div className="tracking-search-panel">
         <input
           type="text"
@@ -369,6 +332,7 @@ function Tracking() {
 
       {error && <div className="tracking-error">{error}</div>}
 
+      {/* KPI Cards */}
       <div className="tracking-summary">
         <div>
           <strong>{filteredShipments.length}</strong>
@@ -387,97 +351,159 @@ function Tracking() {
         </div>
       </div>
 
+      {/* Shipment Accordion List */}
       <div className="tracking-list">
-        {filteredShipments.map((shipment) => {
-          const isCancelled = String(shipment.status || "").toUpperCase() === "CANCELLED";
-          const metrics = liveMetrics[shipment.trackingId];
-          const delayPrediction = calculateDelayPrediction(shipment, metrics);
+        {currentShipments.length > 0 ? (
+          currentShipments.map((shipment) => {
+            const isCancelled = String(shipment.status || "").toUpperCase() === "CANCELLED";
+            const metrics = liveMetrics[shipment.trackingId];
+            const delayPrediction = calculateDelayPrediction(shipment, metrics);
+            const isExpanded = expandedId === shipment.id;
 
-          return (
-            <div className="tracking-card" key={shipment.id || shipment.trackingId}>
-              <div className="tracking-card-header">
-                <div>
-                  <h2>{shipment.trackingId}</h2>
-                  <span>Customer: {shipment.customerName}</span>
-                </div>
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  {!isCancelled && (
-                    <span className={`risk-pill risk-${delayPrediction.risk.toLowerCase()}`}>
-                      {delayPrediction.label} ({delayPrediction.confidence})
-                    </span>
-                  )}
-                  <div
-                    className={`status-pill ${String(shipment.status)
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    {shipment.status}
+            return (
+              <div
+                className={`tracking-card ${isExpanded ? "expanded" : ""}`}
+                key={shipment.id || shipment.trackingId}
+              >
+                {/* Compact Row Header */}
+                <div className="tracking-card-compact" onClick={() => toggleExpand(shipment.id)}>
+                  <div className="tracking-info-main">
+                    <h2>{shipment.trackingId}</h2>
+                    <span className="customer-sub">Customer: {shipment.customerName}</span>
+                  </div>
+
+                  <div className="tracking-status-group">
+                    {!isCancelled && (
+                      <span className={`risk-pill risk-${delayPrediction.risk.toLowerCase()}`}>
+                        {delayPrediction.label} ({delayPrediction.confidence})
+                      </span>
+                    )}
+
+                    <div
+                      className={`status-pill ${String(shipment.status)
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
+                      {shipment.status}
+                    </div>
+
+                    <button
+                      className={`expand-btn ${isExpanded ? "open" : ""}`}
+                      aria-label="Toggle Details"
+                    >
+                      ▼
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="tracking-card-body">
-                <div>
-                  <label>Origin</label>
-                  <p>{shipment.origin}</p>
-                </div>
-                <div>
-                  <label>Destination</label>
-                  <p>{shipment.destination}</p>
-                </div>
-                <div>
-                  <label>Distance / Time</label>
-                  <p>{metrics ? `${metrics.distanceKm} km (${metrics.etaText})` : "Calculating..."}</p>
-                </div>
-                <div>
-                  <label>Calculated Dynamic ETA</label>
-                  <p>{isCancelled ? "Cancelled" : metrics?.estimatedArrival || shipment.deliveryDate}</p>
-                </div>
-              </div>
-
-              {/* Delay Warning Banner */}
-              {delayPrediction.risk === "HIGH" && !isCancelled && (
-                <div className="delay-warning-box">
-                  <strong>⚠️ Delay Alert:</strong> {delayPrediction.delayReason}
-                </div>
-              )}
-
-              <div className="tracking-live-section">
-                {isCancelled ? (
-                  <div className="tracking-map-disabled">
-                    <div className="cancelled-icon">✕</div>
-                    <h3>Tracking Terminated</h3>
-                    <p>This shipment was cancelled. Live monitoring and ETA predictions are suspended.</p>
-                  </div>
-                ) : (
-                  <ShipmentMap
-                    shipment={shipment}
-                    isLoaded={isLoaded}
-                    onMetricsCalculated={handleMetricsCalculated}
-                  />
-                )}
-
-                <div className="tracking-timeline">
-                  {getShipmentTimeline(shipment).map((step, index) => (
-                    <div key={index} className="timeline-item">
-                      <div className={`timeline-dot ${step.state}`} />
-                      <div className="timeline-content">
-                        <h4>{step.title}</h4>
-                        <p>{step.location}</p>
-                        {step.time && <small>{step.time}</small>}
+                {/* Collapsible Detail Section */}
+                {isExpanded && (
+                  <div className="tracking-card-expanded-body">
+                    <div className="tracking-card-body">
+                      <div>
+                        <label>Origin</label>
+                        <p>{shipment.origin}</p>
+                      </div>
+                      <div>
+                        <label>Destination</label>
+                        <p>{shipment.destination}</p>
+                      </div>
+                      <div>
+                        <label>Distance / Time</label>
+                        <p>{metrics ? `${metrics.distanceKm} km (${metrics.etaText})` : "Calculating..."}</p>
+                      </div>
+                      <div>
+                        <label>Calculated Dynamic ETA</label>
+                        <p>{isCancelled ? "Cancelled" : metrics?.estimatedArrival || shipment.deliveryDate}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="tracking-card-footer">
-                <div>Auto Monitoring: Active</div>
-                <div>{isCancelled ? "Shipment Cancelled" : `ETA Status: ${delayPrediction.label}`}</div>
+                    {delayPrediction.risk === "HIGH" && !isCancelled && (
+                      <div className="delay-warning-box">
+                        <strong>⚠️ Delay Alert:</strong> {delayPrediction.delayReason}
+                      </div>
+                    )}
+
+                    <div className="tracking-live-section">
+                      {isCancelled ? (
+                        <div className="tracking-map-disabled">
+                          <div className="cancelled-icon">✕</div>
+                          <h3>Tracking Terminated</h3>
+                          <p>This shipment was cancelled. Dynamic live monitoring is suspended.</p>
+                        </div>
+                      ) : (
+                        <ShipmentMap
+                          shipment={shipment}
+                          isLoaded={isLoaded}
+                          onMetricsCalculated={handleMetricsCalculated}
+                        />
+                      )}
+
+                      <div className="tracking-timeline">
+                        {getShipmentTimeline(shipment).map((step, index) => (
+                          <div key={index} className="timeline-item">
+                            <div className={`timeline-dot ${step.state}`} />
+                            <div className="timeline-content">
+                              <h4>{step.title}</h4>
+                              <p>{step.location}</p>
+                              {step.time && <small>{step.time}</small>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="tracking-card-footer">
+                      <div>Auto Monitoring: Active</div>
+                      <div>{isCancelled ? "Shipment Cancelled" : `ETA Status: ${delayPrediction.label}`}</div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="no-shipments-found">No shipments match your criteria.</div>
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="pagination-container">
+        <span className="pagination-info">
+          Showing <strong>{filteredShipments.length > 0 ? indexOfFirst + 1 : 0}</strong> to{" "}
+          <strong>{Math.min(indexOfLast, filteredShipments.length)}</strong> of{" "}
+          <strong>{filteredShipments.length}</strong> shipments
+        </span>
+
+        <div className="pagination-controls">
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1 || loading}
+          >
+            Previous
+          </button>
+
+          <div className="pagination-numbers">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                className={`pagination-number ${page === currentPage ? "active" : ""}`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages || loading}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

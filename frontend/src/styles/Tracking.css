@@ -10,7 +10,7 @@
   justify-content: center;
   align-items: center;
   height: 70vh;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: #334155;
 }
@@ -24,12 +24,12 @@
 
 .tracking-header h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: 28px;
   color: #0f172a;
 }
 
 .tracking-header p {
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   color: #475569;
   max-width: 620px;
 }
@@ -38,26 +38,32 @@
   display: flex;
   gap: 8px;
   background: #eef2ff;
-  padding: 14px 18px;
-  border-radius: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
   align-items: center;
   color: #334155;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
+/* Search Bar */
 .tracking-search-panel {
   display: flex;
   gap: 12px;
   align-items: flex-end;
   flex-wrap: wrap;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .tracking-search-panel input,
 .tracking-search-panel label input {
-  padding: 14px 18px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1px solid #cbd5e1;
-  font-size: 16px;
+  font-size: 14px;
   color: #0f172a;
 }
 
@@ -74,19 +80,19 @@
 .tracking-date-controls label {
   display: flex;
   flex-direction: column;
-  font-size: 13px;
+  font-size: 12px;
   color: #475569;
-  gap: 6px;
+  gap: 4px;
 }
 
 .tracking-search-panel button {
-  padding: 14px 22px;
+  padding: 10px 20px;
   border: none;
   background: #2563eb;
   color: white;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   transition: background 0.2s;
 }
@@ -95,19 +101,7 @@
   background: #1d4ed8;
 }
 
-.tracking-search-panel button:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-}
-
-.tracking-error {
-  padding: 14px 18px;
-  background: #fee2e2;
-  color: #991b1b;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
+/* KPI Summary */
 .tracking-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -116,124 +110,146 @@
 
 .tracking-summary div {
   background: #ffffff;
-  padding: 18px;
-  border-radius: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
 }
 
 .tracking-summary strong {
-  font-size: 24px;
+  font-size: 22px;
   color: #0f172a;
 }
 
+/* Accordion Card Container */
 .tracking-list {
-  display: grid;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tracking-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.tracking-card-header {
+.tracking-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.tracking-card.expanded {
+  border-color: #93c5fd;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.06);
+}
+
+/* Compact Header */
+.tracking-card-compact {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  background: #ffffff;
 }
 
-.tracking-card-header h2 {
+.tracking-card-compact:hover {
+  background-color: #f8fafc;
+}
+
+.tracking-info-main h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   color: #0f172a;
 }
 
-.tracking-card-header span {
+.customer-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
   display: block;
+}
+
+.tracking-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Expand Dropdown Arrow */
+.expand-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
   color: #475569;
-  margin-top: 6px;
-  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.25s ease, background 0.2s;
 }
 
-.status-pill {
-  padding: 10px 16px;
-  border-radius: 999px;
-  font-weight: 700;
-  color: white;
-  text-transform: capitalize;
-}
-
-.status-pill.in_transit,
-.status-pill.in-transit {
+.expand-btn.open {
+  transform: rotate(180deg);
   background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
 
-.status-pill.delivered {
-  background: #16a34a;
-}
-
-.status-pill.pending {
-  background: #d97706;
-}
-
-.status-pill.out_for_delivery,
-.status-pill.out-for-delivery {
-  background: #7c3aed;
-}
-
-.status-pill.cancelled {
-  background: #dc2626;
+/* Expanded Body Wrapper */
+.tracking-card-expanded-body {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .tracking-card-body {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
+  padding-top: 16px;
 }
 
 .tracking-card-body label {
   display: block;
   color: #64748b;
-  font-size: 13px;
-  margin-bottom: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
 }
 
 .tracking-card-body p {
   margin: 0;
   color: #0f172a;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
 }
 
+/* Live Map & Timeline Layout */
 .tracking-live-section {
   display: flex;
-  gap: 30px;
-  margin-top: 10px;
-  align-items: stretch;
+  gap: 20px;
+  margin-top: 16px;
 }
 
 .tracking-map {
   flex: 2;
-  min-height: 420px;
+  min-height: 380px;
 }
 
-/* Disabled Map visual for cancelled orders */
 .tracking-map-disabled {
   flex: 2;
-  min-height: 420px;
+  min-height: 380px;
   background: #f8fafc;
   border: 2px dashed #cbd5e1;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -243,173 +259,207 @@
 }
 
 .cancelled-icon {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #fee2e2;
   color: #dc2626;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-}
-
-.tracking-map-disabled h3 {
-  margin: 0 0 6px 0;
-  color: #0f172a;
-  font-size: 18px;
-}
-
-.tracking-map-disabled p {
-  margin: 0;
-  color: #64748b;
-  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .tracking-timeline {
   flex: 1;
-  padding: 20px;
+  padding: 16px;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .timeline-item {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   position: relative;
-  padding-bottom: 24px;
+  padding-bottom: 20px;
 }
 
 .timeline-item:not(:last-child)::after {
   content: "";
   position: absolute;
-  left: 9px;
-  top: 20px;
+  left: 7px;
+  top: 18px;
   width: 2px;
-  height: calc(100% - 10px);
+  height: calc(100% - 8px);
   background: #e2e8f0;
 }
 
 .timeline-dot {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   flex-shrink: 0;
   z-index: 2;
 }
 
-.timeline-dot.completed {
-  background: #22c55e;
-}
-
-.timeline-dot.active {
-  background: #2563eb;
-  animation: pulse 1.2s infinite;
-}
-
-.timeline-dot.upcoming {
-  background: #cbd5e1;
-}
-
-/* Red cancelled state dot */
-.timeline-dot.cancelled {
-  background: #dc2626;
-}
+.timeline-dot.completed { background: #22c55e; }
+.timeline-dot.active { background: #2563eb; animation: pulse 1.2s infinite; }
+.timeline-dot.upcoming { background: #cbd5e1; }
+.timeline-dot.cancelled { background: #dc2626; }
 
 .timeline-content h4 {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #0f172a;
 }
 
 .timeline-content p {
-  margin: 4px 0 2px;
+  margin: 2px 0;
   color: #475569;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .timeline-content small {
   color: #94a3b8;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .tracking-card-footer {
   display: flex;
   justify-content: space-between;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13px;
   padding-top: 12px;
+  margin-top: 16px;
   border-top: 1px solid #f1f5f9;
+}
+
+/* Status & Risk Badges */
+.status-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-transform: capitalize;
+}
+
+.status-pill.in_transit,
+.status-pill.in-transit { background: #2563eb; }
+.status-pill.delivered { background: #16a34a; }
+.status-pill.pending { background: #d97706; }
+.status-pill.cancelled { background: #dc2626; }
+
+.risk-pill {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.risk-pill.risk-low { background-color: #dcfce7; color: #15803d; }
+.risk-pill.risk-medium { background-color: #fef3c7; color: #b45309; }
+.risk-pill.risk-high { background-color: #fee2e2; color: #b91c1c; }
+.risk-pill.risk-none { background-color: #f1f5f9; color: #64748b; }
+
+.delay-warning-box {
+  background-color: #fef2f2;
+  border-left: 4px solid #ef4444;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #991b1b;
+  margin-top: 12px;
+}
+
+.no-shipments-found {
+  background: #ffffff;
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Pagination Bar Styles */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  padding: 6px 12px;
+  font-size: 0.825rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  border-radius: 6px;
+  font-size: 0.825rem;
+  cursor: pointer;
+}
+
+.pagination-number.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  font-weight: 600;
 }
 
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  50% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
 
-@media (max-width: 980px) {
-  .tracking-live-section {
-    flex-direction: column;
-  }
-  .tracking-card-body {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 680px) {
-  .tracking-header,
-  .tracking-search-panel,
-  .tracking-card-body {
-    flex-direction: column;
-  }
-
-  .tracking-card-body {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Delay Risk Pill Styles */
-.risk-pill {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.risk-pill.risk-low {
-  background-color: #dcfce7;
-  color: #15803d;
-}
-
-.risk-pill.risk-medium {
-  background-color: #fef3c7;
-  color: #b45309;
-}
-
-.risk-pill.risk-high {
-  background-color: #fee2e2;
-  color: #b91c1c;
-}
-
-.risk-pill.risk-none {
-  background-color: #f1f5f9;
-  color: #64748b;
-}
-
-/* Delay Warning Banner */
-.delay-warning-box {
-  background-color: #fef2f2;
-  border-left: 4px solid #ef4444;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #991b1b;
-  margin-top: 8px;
+@media (max-width: 860px) {
+  .tracking-live-section { flex-direction: column; }
+  .tracking-card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
