@@ -27,6 +27,9 @@ public class Shipment {
     @Column(nullable = false)
     private String customerName;
 
+    @Column(nullable = true)
+private String receiverName;
+
     @Column(nullable = false)
     private String origin;
 
