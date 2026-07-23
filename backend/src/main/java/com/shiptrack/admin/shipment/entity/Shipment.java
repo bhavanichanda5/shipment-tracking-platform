@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.UUID;
+//import java.util.UUID;
 
 import com.shiptrack.auth.entity.User;
 

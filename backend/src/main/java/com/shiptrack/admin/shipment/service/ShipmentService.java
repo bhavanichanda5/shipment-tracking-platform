@@ -10,7 +10,7 @@ import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.repository.ShipmentRepository;
 import com.shiptrack.auth.repository.UserRepository;
 
-import com.shiptrack.auth.repository.UserRepository;
+//import com.shiptrack.auth.repository.UserRepository;
 import com.shiptrack.auth.entity.User;
 
 @Service

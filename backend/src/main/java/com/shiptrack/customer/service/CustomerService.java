@@ -15,7 +15,7 @@ import com.shiptrack.customer.dto.CustomerDashboardResponse;
 import com.shiptrack.customer.dto.CustomerProfileResponse;
 import com.shiptrack.customer.dto.CustomerShipmentResponse;
 import com.shiptrack.customer.dto.ShipmentTrackingResponse;
-import com.shiptrack.admin.shipment.entity.Shipment;
+//import com.shiptrack.admin.shipment.entity.Shipment;
 
 @Service
 public class CustomerService {

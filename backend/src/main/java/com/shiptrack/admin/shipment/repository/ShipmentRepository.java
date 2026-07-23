@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.entity.ShipmentStatus;
 
-import java.util.List;
 import com.shiptrack.auth.entity.User;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
