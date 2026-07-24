@@ -14,6 +14,7 @@ import Delivery from "../../delivery/Delivery";
 
 import { getSupportDashboard } from "../../../services/supportService";
 
+
 import {
     FaBoxOpen,
     FaTruck,
@@ -22,6 +23,7 @@ import {
 } from "react-icons/fa";
 
 import "../../../styles/StatCard.css";
+import Reports from "../../reports/Reports";
 
 function SupportDashboard() {
 
@@ -203,9 +205,7 @@ function SupportDashboard() {
 
                     {section === "reports" && (
 
-                        <h2>
-                            📄 Reports Module Coming Soon...
-                        </h2>
+                       <Reports/>
 
                     )}
 

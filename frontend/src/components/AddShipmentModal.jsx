@@ -1,119 +1,100 @@
 import { useEffect, useState } from "react";
 import "../styles/AddShipmentModal.css";
 
-function AddShipmentModal({
-
-    show,
-    shipment,
-    onClose,
-    onSave
-
-}) {
-
+function AddShipmentModal({ show, shipment, onClose, onSave }) {
     const [shipmentData, setShipmentData] = useState({
-
-        customeId:"",
+        customerId: "",
         customerName: "",
+        receiverName: "",
+        noOfItems: "",
+        totalWeightOfItems: "",
+        shipmentCost: "",
         origin: "",
         destination: "",
         status: "PENDING",
         shipmentDate: "",
         deliveryDate: ""
-
     });
 
-useEffect(() => {
-    if (shipment) {
-        setShipmentData({
-            trackingId: shipment.trackingId,
-            // Extract the 'id' from inside the customerId object safely
-            customerId: shipment.customerId && typeof shipment.customerId === 'object'
-                ? shipment.customerId.id 
-                : (shipment.customerId || ""),
-            customerName: shipment.customerName,
-            origin: shipment.origin,
-            destination: shipment.destination,
-            status: shipment.status,
-            shipmentDate: shipment.shipmentDate,
-            deliveryDate: shipment.deliveryDate
-        });
-    } else {
-        setShipmentData({
-            customerId: "", 
-            customerName: "",
-            origin: "",
-            destination: "",
-            status: "PENDING",
-            shipmentDate: "",
-            deliveryDate: ""
-        });
-    }
-}, [shipment]);
+    useEffect(() => {
+        if (shipment) {
+            setShipmentData({
+                trackingId: shipment.trackingId,
+                customerId: shipment.customerId && typeof shipment.customerId === 'object'
+                    ? shipment.customerId.id 
+                    : (shipment.customerId || ""),
+                customerName: shipment.customerName || "",
+                receiverName: shipment.receiverName || "",
+                noOfItems: shipment.noOfItems || "",
+                totalWeightOfItems: shipment.totalWeightOfItems || "",
+                shipmentCost: shipment.shipmentCost || "",
+                origin: shipment.origin || "",
+                destination: shipment.destination || "",
+                status: shipment.status || "PENDING",
+                shipmentDate: shipment.shipmentDate || "",
+                deliveryDate: shipment.deliveryDate || ""
+            });
+        } else {
+            setShipmentData({
+                customerId: "", 
+                customerName: "",
+                receiverName: "",
+                noOfItems: "",
+                totalWeightOfItems: "",
+                shipmentCost: "",
+                origin: "",
+                destination: "",
+                status: "PENDING",
+                shipmentDate: "",
+                deliveryDate: ""
+            });
+        }
+    }, [shipment]);
 
     if (!show) return null;
 
     const handleChange = (e) => {
-
         setShipmentData({
-
             ...shipmentData,
-
             [e.target.name]: e.target.value
-
         });
-
     };
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    // 1. Construct the payload matching the Spring Boot entity mapping
-    const payload = {
-        ...shipmentData,
-        // Wrap the raw customerId string/number into a User object wrapper
-        customerId: shipmentData.customerId 
-            ? { id: Number(shipmentData.customerId) } 
-            : null
+        const payload = {
+            ...shipmentData,
+            customerId: shipmentData.customerId 
+                ? { id: Number(shipmentData.customerId) } 
+                : null
+        };
+
+        await onSave(payload);
+
+        if (!shipment) {
+            setShipmentData({
+                customerId: "",
+                customerName: "",
+                receiverName: "",
+                noOfItems: "",
+                totalWeightOfItems: "",
+                shipmentCost: "",
+                origin: "",
+                destination: "",
+                status: "PENDING",
+                shipmentDate: "",
+                deliveryDate: ""
+            });
+        }
     };
-
-    // 2. Pass the correctly structured payload to your parent save function
-    await onSave(payload);
-
-    if (!shipment) {
-        setShipmentData({
-            customerId: "",
-            customerName: "",
-            origin: "",
-            destination: "",
-            status: "PENDING",
-            shipmentDate: "",
-            deliveryDate: ""
-        });
-    }
-};
 
     return (
-
         <div className="modal-overlay">
-
             <div className="modal">
-
-                <h2>
-
-                    {
-
-                        shipment
-
-                            ? "Edit Shipment"
-
-                            : "Add Shipment"
-
-                    }
-
-                </h2>
+                <h2>{shipment ? "Edit Shipment" : "Add Shipment"}</h2>
 
                 <form onSubmit={handleSubmit}>
-                    
                     <input
                         name="customerId"
                         placeholder="Customer Id"
@@ -128,6 +109,35 @@ const handleSubmit = async (e) => {
                         value={shipmentData.customerName}
                         onChange={handleChange}
                         required
+                    />
+
+                    <input
+                        name="receiverName"
+                        placeholder="Receiver Name"
+                        value={shipmentData.receiverName}
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <input
+                        name="noOfItems"
+                        placeholder="No of Items"
+                        value={shipmentData.noOfItems}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        name="totalWeightOfItems"
+                        placeholder="Total Weight (e.g., 5.5 kg)"
+                        value={shipmentData.totalWeightOfItems}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        name="shipmentCost"
+                        placeholder="Shipment Cost (e.g., ₹150)"
+                        value={shipmentData.shipmentCost}
+                        onChange={handleChange}
                     />
 
                     <input
@@ -151,27 +161,13 @@ const handleSubmit = async (e) => {
                         value={shipmentData.status}
                         onChange={handleChange}
                     >
-
-                        <option value="PENDING">
-                            Pending
-                        </option>
-
-                        <option value="IN_TRANSIT">
-                            In Transit
-                        </option>
-
-                        <option value="DELIVERED">
-                            Delivered
-                        </option>
-
-                        <option value="CANCELLED">
-                            Cancelled
-                        </option>
-
+                        <option value="PENDING">Pending</option>
+                        <option value="IN_TRANSIT">In Transit</option>
+                        <option value="DELIVERED">Delivered</option>
+                        <option value="CANCELLED">Cancelled</option>
                     </select>
 
                     <label>Shipment Date</label>
-
                     <input
                         type="date"
                         name="shipmentDate"
@@ -181,7 +177,6 @@ const handleSubmit = async (e) => {
                     />
 
                     <label>Delivery Date</label>
-
                     <input
                         type="date"
                         name="deliveryDate"
@@ -191,7 +186,6 @@ const handleSubmit = async (e) => {
                     />
 
                     <div className="modal-buttons">
-
                         <button
                             type="button"
                             className="cancel-btn"
@@ -199,34 +193,17 @@ const handleSubmit = async (e) => {
                         >
                             Cancel
                         </button>
-
                         <button
                             type="submit"
                             className="save-btn"
                         >
-
-                            {
-
-                                shipment
-
-                                    ? "Update Shipment"
-
-                                    : "Save Shipment"
-
-                            }
-
+                            {shipment ? "Update Shipment" : "Save Shipment"}
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
-
         </div>
-
     );
-
 }
 
 export default AddShipmentModal;

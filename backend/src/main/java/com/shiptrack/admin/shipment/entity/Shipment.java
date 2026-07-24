@@ -28,7 +28,16 @@ public class Shipment {
     private String customerName;
 
     @Column(nullable = true)
-private String receiverName;
+    private String receiverName;
+
+    @Column(nullable = true)
+    private String noOfItems;
+
+    @Column(nullable = true)
+    private String totalWeightOfItems;
+
+    @Column(nullable = true)
+    private String shipmentCost;
 
     @Column(nullable = false)
     private String origin;

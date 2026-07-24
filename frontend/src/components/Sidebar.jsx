@@ -54,7 +54,7 @@ function Sidebar({ onSelect, activeSection }) {
 
                 <li className={activeSection === 'users' ? 'active' : ''} onClick={() => select('users')}>
                     <FaUsers />
-                    {!collapsed && <span>Users</span>}
+                    {!collapsed && <span>Staff / Users</span>}
                 </li>
 
                 <li className={activeSection === 'shipments' ? 'active' : ''} onClick={() => select('shipments')}>

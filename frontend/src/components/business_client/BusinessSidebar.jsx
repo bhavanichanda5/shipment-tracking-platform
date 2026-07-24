@@ -64,7 +64,7 @@ function BusinessSidebar({ onSelect, activeSection }) {
                     onClick={() => select("shipments")}
                 >
                     <FaBoxOpen />
-                    {!collapsed && <span>My Shipments</span>}
+                    {!collapsed && <span>Shipments</span>}
                 </li>
 
                 <li
@@ -75,13 +75,6 @@ function BusinessSidebar({ onSelect, activeSection }) {
                     {!collapsed && <span>Tracking</span>}
                 </li>
 
-                <li
-                    className={activeSection === "analytics" ? "active" : ""}
-                    onClick={() => select("analytics")}
-                >
-                    <FaChartBar />
-                    {!collapsed && <span>Analytics</span>}
-                </li>
 
                 <li
                     className={activeSection === "reports" ? "active" : ""}

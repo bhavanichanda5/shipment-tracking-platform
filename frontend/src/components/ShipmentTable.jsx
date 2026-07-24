@@ -8,7 +8,6 @@ import {
     deleteShipment
 } from "../services/shipmentService";
 
-// Fast O(1) Status Configuration Lookup
 const STATUS_MAP = {
     "DELIVERED": { key: "delivered", label: "Delivered" },
     "IN_TRANSIT": { key: "in_transit", label: "In Transit" },
@@ -100,6 +99,7 @@ function ShipmentTable({ searchTerm = "" }) {
         return shipments.filter((s) =>
             s.trackingId?.toLowerCase().includes(query) ||
             s.customerName?.toLowerCase().includes(query) ||
+            s.receiverName?.toLowerCase().includes(query) ||
             s.origin?.toLowerCase().includes(query) ||
             s.destination?.toLowerCase().includes(query) ||
             String(s.id).includes(query)
@@ -154,6 +154,10 @@ function ShipmentTable({ searchTerm = "" }) {
                             <th className="col-id">ID</th>
                             <th className="col-tracking">TRACKING ID</th>
                             <th className="col-customer">CUSTOMER</th>
+                            <th>RECEIVER</th>
+                            <th>ITEMS</th>
+                            <th>WEIGHT</th>
+                            <th>COST</th>
                             <th className="col-origin">ORIGIN</th>
                             <th className="col-destination">DESTINATION</th>
                             <th className="col-status">STATUS</th>
@@ -165,7 +169,7 @@ function ShipmentTable({ searchTerm = "" }) {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="8" className="table-state-cell">
+                                <td colSpan="12" className="table-state-cell">
                                     Loading shipments...
                                 </td>
                             </tr>
@@ -177,6 +181,10 @@ function ShipmentTable({ searchTerm = "" }) {
                                         {shipment.trackingId}
                                     </td>
                                     <td className="col-customer font-medium">{shipment.customerName}</td>
+                                    <td>{shipment.receiverName || "-"}</td>
+                                    <td>{shipment.noOfItems || "-"}</td>
+                                    <td>{shipment.totalWeightOfItems || "-"}</td>
+                                    <td>{shipment.shipmentCost || "-"}</td>
                                     <td className="col-origin">{shipment.origin}</td>
                                     <td className="col-destination">{shipment.destination}</td>
                                     <td className="col-status">{renderStatusBadge(shipment.status)}</td>
@@ -204,7 +212,7 @@ function ShipmentTable({ searchTerm = "" }) {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8" className="table-state-cell">
+                                <td colSpan="12" className="table-state-cell">
                                     No shipments found.
                                 </td>
                             </tr>

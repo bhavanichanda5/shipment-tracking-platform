@@ -62,31 +62,34 @@ public Shipment addShipment(Shipment shipment) {
 }
 
 public Shipment updateShipment(Long id, Shipment shipment) {
-    Shipment existingShipment = shipmentRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Shipment not found"));
+        Shipment existingShipment = shipmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-    if (shipment.getCustomerId() != null && shipment.getCustomerId().getId() != null) {
-        // FIX: Fetch the managed User from the database using the internal Long ID
-        User customer = userRepository.findById(shipment.getCustomerId().getId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-        existingShipment.setCustomerId(customer);
-    } else {
-        existingShipment.setCustomerId(null);
+        if (shipment.getCustomerId() != null && shipment.getCustomerId().getId() != null) {
+            User customer = userRepository.findById(shipment.getCustomerId().getId())
+                    .orElseThrow(() -> new RuntimeException("Customer not found"));
+            existingShipment.setCustomerId(customer);
+        } else {
+            existingShipment.setCustomerId(null);
+        }
+        
+        existingShipment.setCustomerName(shipment.getCustomerName());
+        existingShipment.setReceiverName(shipment.getReceiverName());
+        existingShipment.setNoOfItems(shipment.getNoOfItems());
+        existingShipment.setTotalWeightOfItems(shipment.getTotalWeightOfItems());
+        existingShipment.setShipmentCost(shipment.getShipmentCost());
+        existingShipment.setOrigin(shipment.getOrigin());
+        existingShipment.setDestination(shipment.getDestination());
+        existingShipment.setStatus(shipment.getStatus());
+        existingShipment.setShipmentDate(shipment.getShipmentDate());
+        existingShipment.setDeliveryDate(shipment.getDeliveryDate());
+
+        Shipment saved = shipmentRepository.save(existingShipment);
+        try {
+            activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
+        } catch (Exception ignored) {}
+        return saved;
     }
-    
-    existingShipment.setCustomerName(shipment.getCustomerName());
-    existingShipment.setOrigin(shipment.getOrigin());
-    existingShipment.setDestination(shipment.getDestination());
-    existingShipment.setStatus(shipment.getStatus());
-    existingShipment.setShipmentDate(shipment.getShipmentDate());
-    existingShipment.setDeliveryDate(shipment.getDeliveryDate());
-
-    Shipment saved = shipmentRepository.save(existingShipment);
-    try {
-        activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
-    } catch (Exception ignored) {}
-    return saved;
-}
 
     public void deleteShipment(Long id) {
         if (!shipmentRepository.existsById(id)) {

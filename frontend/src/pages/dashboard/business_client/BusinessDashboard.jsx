@@ -11,6 +11,9 @@ import RecentActivities from "../../../components/RecentActivities";
 import Tracking from "../../tracking/Tracking";
 import Delivery from "../../delivery/Delivery";
 
+
+import Reports from "../../reports/Reports";
+
 import {
     FaBoxOpen,
     FaTruck,
@@ -191,21 +194,11 @@ function BusinessDashboard() {
 
                     {section === "dashboard" && null}
 
-                    {section === "reports" && (
-
-                        <h2>
-                            Reports Module Coming Soon...
-                        </h2>
-
+                    {section === 'reports' && (
+                        <Reports />
                     )}
 
-                    {section === "analytics" && (
-
-                        <h2>
-                            Analytics Module Coming Soon...
-                        </h2>
-
-                    )}
+                
 
                 </div>
 
