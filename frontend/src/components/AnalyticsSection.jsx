@@ -16,10 +16,13 @@ import { getMonthlyShipmentOverview, getShipmentStatusCounts } from "../services
 import "../styles/AnalyticsSection.css";
 
 const STATUS_COLORS = {
-    "DELIVERED": "#22C55E",        // Green
-    "IN TRANSIT": "#2563EB",       // Blue
-    "PENDING": "#F59E0B",          // Yellow
+    "CREATED": "#f59e0b",          // Amber / Yellow
+    "PICKED UP": "#6366f1",        // Soft Indigo
+    "IN TRANSIT": "#3b82f6",       // Blue
+    "OUT FOR DELIVERY": "#a855f7", // Purple (cleaned hex string without !important)
+    "DELIVERED": "#22C55E",        // Emerald Green
     "CANCELLED": "#EF4444",        // Red
+    "FAILED DELIVERY": "#E11D48",  // Crimson Red
 };
 
 function AnalyticsSection(){
@@ -103,34 +106,27 @@ function AnalyticsSection(){
                     <PieChart>
 
                         <Pie
+                            data={statusData}
+                            dataKey="value"
+                            nameKey="name"
+                            outerRadius={100}
+                            label
+                        >
+                            {statusData.map((entry, index) => {
+                                // Formats "OUT_FOR_DELIVERY" or "out for delivery" -> "OUT FOR DELIVERY"
+                                const formattedKey = String(entry.name || '')
+                                    .toUpperCase()
+                                    .replace(/_/g, ' ')
+                                    .trim();
 
-                                data={statusData}
-
-                                dataKey="value"
-
-                                outerRadius={100}
-
-                                label
-
-                            >
-
-                                {
-
-                                    statusData.map((entry, index) => (
-
-                                        <Cell
-
-                                            key={index}
-
-                                            fill={STATUS_COLORS[entry.name] || "#94A3B8"}
-
-                                        />
-
-                                    ))
-
-                                }
-
-                            </Pie>
+                                return (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={STATUS_COLORS[formattedKey] || STATUS_COLORS[entry.name] || "#94A3B8"}
+                                    />
+                                );
+                            })}
+                        </Pie>
 
                         <Tooltip/>
 

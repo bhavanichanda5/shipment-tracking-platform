@@ -8,30 +8,39 @@ import {
     deleteShipment
 } from "../services/shipmentService";
 
+
+
 const STATUS_MAP = {
-    "DELIVERED": { key: "delivered", label: "Delivered" },
+    "CREATED": { key: "pending", label: "Created" },
+    "PICKED_UP": { key: "in_transit", label: "Picked Up" },
     "IN_TRANSIT": { key: "in_transit", label: "In Transit" },
-    "IN TRANSIT": { key: "in_transit", label: "In Transit" },
-    "IN-TRANSIT": { key: "in_transit", label: "In Transit" },
-    "PENDING": { key: "pending", label: "Pending" },
+    "OUT_FOR_DELIVERY": { key: "in_transit", label: "Out For Delivery" },
+    "DELIVERED": { key: "delivered", label: "Delivered" },
+    "FAILED_DELIVERY": { key: "cancelled", label: "Failed Delivery" },
     "CANCELLED": { key: "cancelled", label: "Cancelled" }
 };
 
 const renderStatusBadge = (status) => {
-    const raw = String(status || '').toUpperCase().trim();
-    const config = STATUS_MAP[raw] || {
-        key: raw.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-        label: raw.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-    };
+    if (!status) return null;
+
+    // Standardizes strings like "IN_TRANSIT" or "Out For Delivery" -> "in-transit", "out-for-delivery"
+    const statusClass = String(status)
+        .toLowerCase()
+        .trim()
+        .replace(/[\s_]+/g, '-');
+
+    // Standardizes text display (e.g. "IN_TRANSIT" -> "IN TRANSIT")
+    const displayLabel = String(status).replace(/_/g, ' ');
 
     return (
-        <span className={`status-pill ${config.key}`}>
-            {config.label}
+        <span className={`status ${statusClass}`}>
+            {displayLabel}
         </span>
     );
 };
 
 function ShipmentTable({ searchTerm = "" }) {
+
     const [shipments, setShipments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -148,6 +157,7 @@ function ShipmentTable({ searchTerm = "" }) {
             />
 
             <div className="table-wrapper">
+                
                 <table>
                     <thead>
                         <tr>
@@ -179,6 +189,7 @@ function ShipmentTable({ searchTerm = "" }) {
                                     <td className="col-id font-mono">#{shipment.id}</td>
                                     <td className="col-tracking font-mono font-medium highlight-text">
                                         {shipment.trackingId}
+                                        
                                     </td>
                                     <td className="col-customer font-medium">{shipment.customerName}</td>
                                     <td>{shipment.receiverName || "-"}</td>

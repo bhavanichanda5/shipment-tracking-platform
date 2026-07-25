@@ -129,28 +129,75 @@
     color: #475569;
 }
 
+/* Clean Rectangle Status Badge with Left Color Bar */
 .status-pill {
-    padding: 10px 16px;
-    border-radius: 999px;
-    font-weight: 700;
-    color: white;
-    text-transform: capitalize;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px 12px !important;
+  border-radius: 4px !important; /* <--- Rectangle shape */
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap !important;
+  border-left-width: 4px !important;
+  border-left-style: solid !important;
+  box-shadow: none !important;
 }
 
-.status-pill.pending {
-    background: #f59e0b;
+/* 1. CREATED - Amber Accent */
+.status-pill.created {
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border-left-color: #f59e0b !important;
 }
 
+/* 2. PICKED UP - Soft Indigo Accent */
+.status-pill.picked-up,
+.status-pill.picked_up {
+  background-color: #eef2ff !important;
+  color: #3730a3 !important;
+  border-left-color: #6366f1 !important;
+}
+
+/* 3. IN TRANSIT - Blue Accent */
+.status-pill.in-transit,
+.status-pill.intransit,
 .status-pill.in_transit {
-    background: #2563eb;
+  background-color: #e8f0fe !important;
+  color: #1a73e8 !important;
+  border-left-color: #1a73e8 !important;
 }
 
+/* 4. OUT FOR DELIVERY - Purple Accent */
+.status-pill.out-for-delivery,
+.status-pill.out_for_delivery {
+  background-color: #faf5ff !important;
+  color: #6b21a8 !important;
+  border-left-color: #a855f7 !important;
+}
+
+/* 5. DELIVERED - Green Accent */
 .status-pill.delivered {
-    background: #16a34a;
+  background-color: #e6f4ea !important;
+  color: #137333 !important;
+  border-left-color: #1e8e3e !important;
 }
 
+/* 7. CANCELLED - Soft Red Accent */
 .status-pill.cancelled {
-    background: #dc2626;
+  background-color: #fce8e6 !important;
+  color: #c5221f !important;
+  border-left-color: #ea4335 !important;
+}
+
+/* 8. FAILED DELIVERY - Crimson Accent */
+.status-pill.failed-delivery,
+.status-pill.failed_delivery {
+  background-color: #fff1f2 !important;
+  color: #9f1239 !important;
+  border-left-color: #e11d48 !important;
 }
 
 .delivery-card-body {

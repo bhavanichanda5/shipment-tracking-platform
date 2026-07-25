@@ -179,24 +179,81 @@ tbody tr:hover {
 .role-business-client { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
 
 /* Status Badges */
-.status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 110px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .3px;
-    text-transform: capitalize;
+/* Base Status Pill with Left Line Accent */
+.status, 
+.status-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px 10px !important;
+    border-radius: 4px !important; /* Slight rectangle rounding */
+    font-size: 0.725rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    border: none !important; /* Remove full border */
 }
 
-.delivered { background: #16a34a !important; }
-.pending { background: #d97706 !important; }
-.cancelled { background: #dc2626 !important; }
-.in_transit { background: #2563eb !important; }
+/* 1. CREATED - Amber / Yellow Line */
+.status.created,
+.status.pending,
+.created,
+.pending {
+    background-color: #fffbeb !important;
+    color: #b45309 !important;
+    border-left: 4px solid #f59e0b !important; /* <--- Left Accent Bar */
+}
+
+/* 2. PICKED UP - Indigo Line */
+.status.picked-up,
+.status.picked_up,
+.picked-up,
+.picked_up {
+    background-color: #eef2ff !important;
+    color: #3730a3 !important;
+    border-left: 4px solid #6366f1 !important;
+}
+
+/* 3. IN TRANSIT - Blue Line */
+.status.in-transit,
+.status.in_transit,
+.in-transit,
+.in_transit {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border-left: 4px solid #3b82f6 !important;
+}
+
+/* 4. OUT FOR DELIVERY - Purple Line */
+.status.out-for-delivery,
+.status.out_for_delivery,
+.out-for-delivery,
+.out_for_delivery{
+    background-color: #faf5ff !important;
+    color: #6b21a8 !important;
+    border-left: 4px solid #a855f7 !important;
+}
+
+/* 5. DELIVERED - Green Line */
+.status.delivered,
+.delivered {
+    background-color: #f0fdf4 !important;
+    color: #15803d !important;
+    border-left: 4px solid #22c55e !important;
+}
+
+/* 6. CANCELLED / FAILED - Red Line */
+.status.cancelled,
+.status.failed-delivery,
+.status.failed_delivery,
+.cancelled,
+.failed-delivery,
+.failed_delivery {
+    background-color: #fef2f2 !important;
+    color: #b91c1c !important;
+    border-left: 4px solid #ef4444 !important;
+}
 
 /* Pagination Container */
 .pagination-container {

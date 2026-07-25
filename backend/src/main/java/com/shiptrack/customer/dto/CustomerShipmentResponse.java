@@ -1,7 +1,6 @@
 package com.shiptrack.customer.dto;
 
 import java.time.LocalDate;
-
 import com.shiptrack.admin.shipment.entity.ShipmentStatus;
 
 import lombok.AllArgsConstructor;
@@ -16,6 +15,11 @@ import lombok.Setter;
 public class CustomerShipmentResponse {
 
     private String trackingId;
+    private String customerName;
+    private String receiver;
+    private String items;
+    private String weight;
+    private String cost;
     private String origin;
     private String destination;
     private ShipmentStatus status;

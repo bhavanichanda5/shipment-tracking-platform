@@ -4,17 +4,9 @@ import "../styles/ShipmentTable.css";
 
 const ITEMS_PER_PAGE = 5;
 
-function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
+function CustomerShipmentTable({ searchTerm = "", onTrack }) {
     const [shipments, setShipments] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-
-    const [formData, setFormData] = useState({
-        sender: "",
-        receiver: "",
-        origin: "",
-        destination: ""
-    });
 
     useEffect(() => {
         loadShipments();
@@ -29,37 +21,10 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleCreateShipment = async (e) => {
-        e.preventDefault();
-
-        if (!formData.sender || !formData.receiver || !formData.origin || !formData.destination) {
-            alert("Please fill in all fields");
-            return;
-        }
-
-        try {
-            const savedShipment = await createCustomerShipment(formData);
-
-            setShipments((prev) => [savedShipment, ...prev]);
-
-            if (onAddShipment) {
-                onAddShipment(savedShipment);
-            }
-
-            setFormData({ sender: "", receiver: "", origin: "", destination: "" });
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error("Backend Error Details:", error.response?.data || error.message);
-            alert("Failed to create shipment: " + (error.response?.data?.message || error.message));
-        }
+    // --- Helper to format status CSS dynamically ---
+    const getStatusClass = (status) => {
+        if (!status) return "";
+        return String(status).toLowerCase().trim().replace(/[\s_]+/g, "-");
     };
 
     // --- Memoized Filtering ---
@@ -120,9 +85,6 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
                     <h2>My Shipments</h2>
                     <span className="count-badge">{filteredShipments.length} total</span>
                 </div>
-                <button className="add-btn" onClick={() => setIsModalOpen(true)}>
-                    + Add Shipment
-                </button>
             </div>
 
             {/* Table */}
@@ -130,10 +92,14 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
                 <thead>
                     <tr>
                         <th>Tracking ID</th>
+                        <th>Customer</th>
+                        <th>Receiver</th>
+                        <th>Items</th>
+                        <th>Weight</th>
+                        <th>Cost</th>
                         <th>Origin</th>
                         <th>Destination</th>
                         <th>Status</th>
-                        <th>Shipment Date</th>
                         <th>Delivery Date</th>
                         <th>Action</th>
                     </tr>
@@ -141,21 +107,25 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
                 <tbody>
                     {currentShipments.length > 0 ? (
                         currentShipments.map((shipment) => (
-                            <tr key={shipment.trackingId}>
+                            <tr key={shipment.trackingId || shipment.id}>
                                 <td><strong>{shipment.trackingId}</strong></td>
-                                <td>{shipment.origin}</td>
-                                <td>{shipment.destination}</td>
+                                <td><strong>{shipment.customerName || shipment.sender || "—"}</strong></td>
+                                <td>{shipment.receiver || "—"}</td>
+                                <td>{shipment.items || shipment.itemCount || 1}</td>
+                                <td>{shipment.weight ? `${shipment.weight} kg` : "—"}</td>
+                                <td>{shipment.cost ? `${shipment.cost}` : "—"}</td>
+                                <td>{shipment.origin || "—"}</td>
+                                <td>{shipment.destination || "—"}</td>
                                 <td>
-                                    <span className={`status ${shipment.status?.toLowerCase().replace(/\s+/g, '_')}`}>
-                                        {shipment.status}
+                                    <span className={`status-pill ${getStatusClass(shipment.status)}`}>
+                                        {String(shipment.status || "UNKNOWN").replace(/_/g, " ")}
                                     </span>
                                 </td>
-                                <td>{shipment.shipmentDate || "N/A"}</td>
-                                <td>{shipment.deliveryDate || "N/A"}</td>
+                                <td>{shipment.deliveryDate || "—"}</td>
                                 <td>
                                     <button
                                         className="track-btn"
-                                        onClick={() => onTrack(shipment.trackingId)}
+                                        onClick={() => onTrack && onTrack(shipment.trackingId)}
                                     >
                                         Track
                                     </button>
@@ -164,7 +134,7 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="7" style={{ textAlign: "center", padding: "28px", color: "#64748b" }}>
+                            <td colSpan="11" style={{ textAlign: "center", padding: "28px", color: "#64748b" }}>
                                 No Shipments Found
                             </td>
                         </tr>
@@ -213,77 +183,6 @@ function CustomerShipmentTable({ searchTerm = "", onTrack, onAddShipment }) {
                         >
                             Next &rarr;
                         </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Pop-up */}
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Create New Shipment</h3>
-                        <form onSubmit={handleCreateShipment}>
-                            <div className="form-group">
-                                <label>Sender</label>
-                                <input
-                                    type="text"
-                                    name="sender"
-                                    placeholder="Sender Name"
-                                    value={formData.sender}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Receiver</label>
-                                <input
-                                    type="text"
-                                    name="receiver"
-                                    placeholder="Receiver Name"
-                                    value={formData.receiver}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Origin</label>
-                                <input
-                                    type="text"
-                                    name="origin"
-                                    placeholder="Origin City / Address"
-                                    value={formData.origin}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Destination</label>
-                                <input
-                                    type="text"
-                                    name="destination"
-                                    placeholder="Destination City / Address"
-                                    value={formData.destination}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="modal-actions">
-                                <button
-                                    type="button"
-                                    className="cancel-btn"
-                                    onClick={() => setIsModalOpen(false)}
-                                >
-                                    Cancel
-                                </button>
-                                <button type="submit" className="submit-btn">
-                                    Create Shipment
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             )}

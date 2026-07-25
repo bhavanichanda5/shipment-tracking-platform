@@ -210,14 +210,22 @@
   box-shadow: none !important;
 }
 
-/* 1. DELIVERED - Soft Light Green with Dark Green Accent */
-.status-pill.delivered {
-  background-color: #e6f4ea !important;
-  color: #137333 !important;
-  border-left-color: #1e8e3e !important;
+/* 1. CREATED - Amber / Yellow Accent */
+.status-pill.created {
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border-left-color: #f59e0b !important;
 }
 
-/* 2. IN TRANSIT - Soft Blue with Blue Accent */
+/* 2. PICKED UP - Soft Indigo Accent */
+.status-pill.picked-up,
+.status-pill.picked_up {
+  background-color: #eef2ff !important;
+  color: #3730a3 !important;
+  border-left-color: #6366f1 !important;
+}
+
+/* 3. IN TRANSIT - Blue Accent */
 .status-pill.in-transit,
 .status-pill.intransit,
 .status-pill.in_transit {
@@ -226,18 +234,35 @@
   border-left-color: #1a73e8 !important;
 }
 
-/* 3. PENDING - Soft Yellow with Amber Accent */
-.status-pill.pending {
-  background-color: #fef7e0 !important;
-  color: #b06000 !important;
-  border-left-color: #f9ab00 !important;
+/* 4. OUT FOR DELIVERY - Purple Accent */
+.status-pill.out-for-delivery,
+.status-pill.out_for_delivery {
+  background-color: #faf5ff !important;
+  color: #6b21a8 !important;
+  border-left-color: #a855f7 !important;
 }
 
-/* 4. CANCELLED - Soft Pink with Red Accent */
+/* 5. DELIVERED - Green Accent */
+.status-pill.delivered {
+  background-color: #e6f4ea !important;
+  color: #137333 !important;
+  border-left-color: #1e8e3e !important;
+}
+
+
+/* 7. CANCELLED - Soft Red Accent */
 .status-pill.cancelled {
   background-color: #fce8e6 !important;
   color: #c5221f !important;
   border-left-color: #ea4335 !important;
+}
+
+/* 8. FAILED DELIVERY - Crimson Red Accent */
+.status-pill.failed-delivery,
+.status-pill.failed_delivery {
+  background-color: #fff1f2 !important;
+  color: #9f1239 !important;
+  border-left-color: #e11d48 !important;
 }
 /* Empty & Loading States */
 .reports-state-cell {

@@ -15,7 +15,6 @@ import com.shiptrack.customer.dto.CustomerDashboardResponse;
 import com.shiptrack.customer.dto.CustomerProfileResponse;
 import com.shiptrack.customer.dto.CustomerShipmentResponse;
 import com.shiptrack.customer.dto.ShipmentTrackingResponse;
-//import com.shiptrack.admin.shipment.entity.Shipment;
 
 @Service
 public class CustomerService {
@@ -25,7 +24,6 @@ public class CustomerService {
 
     public CustomerService(ShipmentRepository shipmentRepository,
                            UserRepository userRepository) {
-
         this.shipmentRepository = shipmentRepository;
         this.userRepository = userRepository;
     }
@@ -35,8 +33,7 @@ public class CustomerService {
     public CustomerDashboardResponse getDashboard(String username) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         List<Shipment> shipments = shipmentRepository.findByCustomerId(user);
 
@@ -50,22 +47,17 @@ public class CustomerService {
                 .filter(s -> s.getStatus() == ShipmentStatus.DELIVERED)
                 .count();
 
+        // FIXED: Changed ShipmentStatus.PENDING -> ShipmentStatus.CREATED
         int pending = (int) shipments.stream()
-                .filter(s -> s.getStatus() == ShipmentStatus.PENDING)
+                .filter(s -> s.getStatus() == ShipmentStatus.CREATED)
                 .count();
 
         return new CustomerDashboardResponse(
-
                 user.getUsername(),
-
                 total,
-
                 active,
-
                 delivered,
-
                 pending
-
         );
     }
 
@@ -74,75 +66,64 @@ public class CustomerService {
     public List<CustomerShipmentResponse> getMyShipments(String username) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        // FIXED: Passes all 11 arguments required by CustomerShipmentResponse
         return shipmentRepository.findByCustomerId(user)
-                .stream()
-                .map(shipment -> new CustomerShipmentResponse(
-
-                        shipment.getTrackingId(),
-
-                        shipment.getOrigin(),
-
-                        shipment.getDestination(),
-
-                        shipment.getStatus(),
-
-                        shipment.getShipmentDate(),
-
-                        shipment.getDeliveryDate()
-
-                ))
-                .collect(Collectors.toList());
+        .stream()
+        .map(shipment -> new CustomerShipmentResponse(
+                shipment.getTrackingId(),
+                shipment.getCustomerName(),
+                shipment.getReceiverName(), // or shipment.getReceiver()
+                shipment.getNoOfItems(),                          // Default value if Shipment entity lacks item count
+                shipment.getTotalWeightOfItems(),
+                shipment.getShipmentCost(),
+                shipment.getOrigin(),
+                shipment.getDestination(),
+                shipment.getStatus(),
+                shipment.getShipmentDate(),
+                shipment.getDeliveryDate()
+        ))
+        .collect(Collectors.toList());
     }
 
-        public ShipmentTrackingResponse getTracking(String username, String trackingId) {
+    // ================= Tracking =================
 
-                User user = userRepository.findByUsername(username)
-                        .orElseThrow(() ->
-                                new UsernameNotFoundException("User not found"));
+    public ShipmentTrackingResponse getTracking(String username, String trackingId) {
 
-                Shipment shipment = shipmentRepository.findByTrackingId(trackingId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Shipment not found"));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-                // Security Check
-                // Customer can only view their own shipment
-                if (!shipment.getCustomerId().getId().equals(user.getId())) {
+        Shipment shipment = shipmentRepository.findByTrackingId(trackingId)
+                .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-                        throw new RuntimeException("Access Denied");
+        // Security Check: Customer can only view their own shipment
+        if (!shipment.getCustomerId().getId().equals(user.getId())) {
+            throw new RuntimeException("Access Denied");
+        }
 
-                }
-
-                return new ShipmentTrackingResponse(
+        return new ShipmentTrackingResponse(
                 shipment.getTrackingId(),
-                user.getUsername(),           // Pass the customer name here
-                shipment.getOrigin(),         // Pass origin here
-                shipment.getDestination(),    // Pass destination here
+                user.getUsername(),
+                shipment.getOrigin(),
+                shipment.getDestination(),
                 shipment.getStatus(),
                 shipment.getShipmentDate(),
                 shipment.getDeliveryDate()
         );
+    }
 
-        }
+    // ================= Profile =================
 
-        public CustomerProfileResponse getProfile(String username) {
+    public CustomerProfileResponse getProfile(String username) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new CustomerProfileResponse(
-
                 user.getId(),
-
                 user.getUsername(),
-
                 user.getRole().name().replace("_", " ")
-
         );
-
-        }
-
+    }
 }

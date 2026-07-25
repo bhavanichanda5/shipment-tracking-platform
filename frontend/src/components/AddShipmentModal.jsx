@@ -11,7 +11,7 @@ function AddShipmentModal({ show, shipment, onClose, onSave }) {
         shipmentCost: "",
         origin: "",
         destination: "",
-        status: "PENDING",
+        status: "CREATED",
         shipmentDate: "",
         deliveryDate: ""
     });
@@ -30,7 +30,7 @@ function AddShipmentModal({ show, shipment, onClose, onSave }) {
                 shipmentCost: shipment.shipmentCost || "",
                 origin: shipment.origin || "",
                 destination: shipment.destination || "",
-                status: shipment.status || "PENDING",
+                status: shipment.status || "CREATED",
                 shipmentDate: shipment.shipmentDate || "",
                 deliveryDate: shipment.deliveryDate || ""
             });
@@ -44,7 +44,7 @@ function AddShipmentModal({ show, shipment, onClose, onSave }) {
                 shipmentCost: "",
                 origin: "",
                 destination: "",
-                status: "PENDING",
+                status: "CREATED",
                 shipmentDate: "",
                 deliveryDate: ""
             });
@@ -82,7 +82,7 @@ function AddShipmentModal({ show, shipment, onClose, onSave }) {
                 shipmentCost: "",
                 origin: "",
                 destination: "",
-                status: "PENDING",
+                status: "CREATED",
                 shipmentDate: "",
                 deliveryDate: ""
             });
@@ -161,9 +161,12 @@ function AddShipmentModal({ show, shipment, onClose, onSave }) {
                         value={shipmentData.status}
                         onChange={handleChange}
                     >
-                        <option value="PENDING">Pending</option>
+                       <option value="CREATED">Created</option>
+                        <option value="PICKED_UP">Picked Up</option>
                         <option value="IN_TRANSIT">In Transit</option>
+                        <option value="OUT_FOR_DELIVERY">Out For Delivery</option>
                         <option value="DELIVERED">Delivered</option>
+                        <option value="FAILED_DELIVERY">Failed Delivery</option>
                         <option value="CANCELLED">Cancelled</option>
                     </select>
 

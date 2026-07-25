@@ -2,6 +2,25 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { getAllShipments } from "../../services/shipmentService";
 import "../../styles/Reports.css";
 
+const renderStatusBadge = (status) => {
+    if (!status) return null;
+
+    // Formats "PICKED_UP" or "Picked Up" -> "picked-up"
+    const statusClass = String(status)
+        .toLowerCase()
+        .trim()
+        .replace(/[\s_]+/g, '-');
+
+    // Display label: "PICKED_UP" -> "PICKED UP"
+    const label = String(status).replace(/_/g, ' ');
+
+    return (
+        <span className={`status-pill ${statusClass}`}>
+            {label}
+        </span>
+    );
+};
+
 function Reports() {
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(false);

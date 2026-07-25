@@ -96,16 +96,29 @@ function BusinessShipmentTable({ searchTerm = "" }) {
                                         let statusKey;
 
                                         switch (raw) {
+                                            case "CREATED":
+                                            case "PENDING":
+                                                statusKey = "created";
+                                                break;
+                                            case "PICKED_UP":
+                                            case "PICKED UP":
+                                                statusKey = "picked_up";
+                                                break;
                                             case "IN_TRANSIT":
                                             case "IN TRANSIT":
                                             case "IN-TRANSIT":
                                                 statusKey = "in_transit";
                                                 break;
+                                            case "OUT_FOR_DELIVERY":
+                                            case "OUT FOR DELIVERY":
+                                                statusKey = "out_for_delivery";
+                                                break;
                                             case "DELIVERED":
                                                 statusKey = "delivered";
                                                 break;
-                                            case "PENDING":
-                                                statusKey = "pending";
+                                            case "FAILED_DELIVERY":
+                                            case "FAILED DELIVERY":
+                                                statusKey = "failed_delivery";
                                                 break;
                                             case "CANCELLED":
                                                 statusKey = "cancelled";
@@ -145,7 +158,7 @@ function BusinessShipmentTable({ searchTerm = "" }) {
                 className="pagination-container"
                 style={{
                     display: "flex",
-                    justify: "space-between",
+                    justifyContent: "space-between",
                     alignItems: "center",
                     marginTop: "15px",
                     paddingTop: "10px",

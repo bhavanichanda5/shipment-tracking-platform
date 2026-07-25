@@ -49,6 +49,9 @@ public Shipment addShipment(Shipment shipment) {
         shipment.setCustomerName(customer.getName());
     }
 
+    shipment.setTotalWeightOfItems(formatWeight(shipment.getTotalWeightOfItems()));
+    shipment.setShipmentCost(formatCost(shipment.getShipmentCost()));
+
     Shipment saved = shipmentRepository.save(shipment);
 
     try {
@@ -72,6 +75,10 @@ public Shipment updateShipment(Long id, Shipment shipment) {
         } else {
             existingShipment.setCustomerId(null);
         }
+
+        // --- FORMAT WEIGHT & COST IN BACKEND ---
+        existingShipment.setTotalWeightOfItems(formatWeight(shipment.getTotalWeightOfItems()));
+        existingShipment.setShipmentCost(formatCost(shipment.getShipmentCost()));
         
         existingShipment.setCustomerName(shipment.getCustomerName());
         existingShipment.setReceiverName(shipment.getReceiverName());
@@ -104,6 +111,25 @@ public Shipment updateShipment(Long id, Shipment shipment) {
 
     private String generateTrackingId() {
         return "TRK-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+
+    // ================= HELPER METHODS =================
+
+    private String formatWeight(String weight) {
+        if (weight == null || weight.isBlank()) return "";
+        weight = weight.trim();
+        // Don't append if already formatted with "kg"
+        if (weight.toLowerCase().endsWith("kg")) return weight;
+        return weight + " kg";
+    }
+
+    private String formatCost(String cost) {
+        if (cost == null || cost.isBlank()) return "";
+        cost = cost.trim();
+        // Don't append if already formatted with "₹"
+        if (cost.startsWith("₹")) return cost;
+        return "₹" + cost;
     }
 
 }
