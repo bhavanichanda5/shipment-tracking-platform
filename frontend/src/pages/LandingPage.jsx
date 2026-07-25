@@ -24,7 +24,7 @@ function LandingPage() {
       {/* ===========================
             TOP HEADER
       ============================ */}
-
+<header class="header-wrapper">
       <div className="top-header">
 
         <div className="top-left">
@@ -108,7 +108,7 @@ function LandingPage() {
         <FaBars className="menu-icon" />
 
       </nav>
-
+</header>
       {/* ===========================
               HERO SECTION
       ============================ */}

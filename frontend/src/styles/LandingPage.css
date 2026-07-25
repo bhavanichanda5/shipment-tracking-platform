@@ -49,17 +49,23 @@ button {
 .landing-page {
   width: 100%;
   overflow-x: hidden;
-  padding-top: 130px; /* Pushes the entire viewport down so nothing starts hidden under the navbar */
+  padding-top: 0; /* Reset top padding since sticky wrapper takes natural layout space */
 }
 
 /* ==========================================
-   TOP HEADER
+   FIXED HEADER WRAPPER (GUARANTEED STICKY)
 ========================================== */
 
-.top-header {
-  position: fixed; /* Fixed viewport reference */
+.header-wrapper {
+  position: fixed; /* Fixed viewport overlay - bypasses parent overflow locks */
   top: 0;
   left: 0;
+  width: 100%;
+  z-index: 9999; /* Keeps header strictly on top of all page layers */
+}
+
+.top-header {
+  position: relative;
   width: 100%;
   height: 45px;
   background: #0f172a;
@@ -69,7 +75,41 @@ button {
   align-items: center;
   padding: 0 80px;
   font-size: 14px;
-  z-index: 1010; /* Placed cleanly above standard content layers */
+}
+
+.navbar {
+  position: relative;
+  width: 100%;
+  height: 85px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 80px;
+  box-shadow: 0 3px 18px rgba(0, 0, 0, .08);
+}
+
+.landing-page {
+  width: 100%;
+  overflow-x: hidden;
+  padding-top: 130px; /* Offset page content by combined header height (45px + 85px) */
+}
+
+/* ==========================================
+   TOP HEADER
+========================================== */
+
+.top-header {
+  position: relative;
+  width: 100%;
+  height: 45px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 80px;
+  font-size: 14px;
 }
 
 .top-left {
@@ -89,9 +129,8 @@ button {
 ========================================== */
 
 .navbar {
-  position: fixed; /* Fixed viewport reference */
-  top: 45px; /* Sits perfectly underneath the 45px top-header */
-  left: 0;
+  position: relative;
+  top: 0;
   width: 100%;
   height: 85px;
   background: #fff;
@@ -99,7 +138,6 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 0 80px;
-  z-index: 1000;
   box-shadow: 0 3px 18px rgba(0, 0, 0, .08);
 }
 
@@ -178,11 +216,11 @@ button {
 
 .hero-section {
   width: 100%;
-  min-height: calc(100vh - 130px); /* Adjusts viewport height calculation safely */
+  min-height: calc(100vh - 130px);
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 70px 80px;
+  padding: 70px 80px; 
   background: linear-gradient(135deg, #eef6ff, #ffffff);
 }
 
@@ -776,16 +814,13 @@ button {
 }
 
 @media(max-width:768px) {
-  /* When top-header is hidden on mobile, update layouts */
+  .top-header {
+    display: none; /* Optionally hide top header on mobile */
+  }
+
   .navbar {
-    position: fixed;
-    top: 0; /* Align directly to the top edge since top-header is gone */
     height: 85px;
     padding: 20px;
-  }
-  
-  .landing-page {
-    padding-top: 85px; /* Drop offset value down from 130px to match navbar only */
   }
 
   section {
