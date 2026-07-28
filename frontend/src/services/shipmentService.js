@@ -1,67 +1,72 @@
-import api from "./api";
+import api from "./api"; // Use custom axios instance with interceptor
 
+// =============================
+// Get All Shipments
+// =============================
 export const getAllShipments = async () => {
-
-    const response = await api.get("/shipments", {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-    });
-
+    const response = await api.get("/shipments");
     return response.data;
-
 };
 
+// =============================
+// Get Shipment By Id
+// =============================
+export const getShipmentById = async (id) => {
+    const response = await api.get(`/shipments/${id}`);
+    return response.data;
+};
+
+// =============================
+// Create Shipment
+// =============================
 export const addShipment = async (shipment) => {
+    const response = await api.post("/shipments", shipment);
+    return response.data;
+};
+
+// =============================
+// Update Shipment
+// =============================
+export const updateShipment = async (id, shipment) => {
+    const response = await api.put(`/shipments/${id}`, shipment);
+    return response.data;
+};
+
+// =============================
+// Delete Shipment
+// =============================
+export const deleteShipment = async (id) => {
+    await api.delete(`/shipments/${id}`);
+};
+
+// =============================
+// Update Truck GPS Location
+// =============================
+export const updateTruckLocation = async (
+    trackingId,
+    latitude,
+    longitude,
+    speed,
+    locationName
+) => {
 
     const response = await api.post(
-
-        "/shipments",
-
-        shipment,
-
+        `/shipments/${trackingId}/location`,
         {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
+            currentLatitude: latitude,
+            currentLongitude: longitude,
+            truckSpeed: speed,
+            currentLocationName: locationName
         }
-
     );
 
     return response.data;
-
 };
 
-export const updateShipment = async (id, shipment) => {
-
-    const response = await api.put(
-
-        `/shipments/${id}`,
-
-        shipment,
-
-        {
-            headers: {
-                Authorization:
-                    `Bearer ${localStorage.getItem("token")}`
-            }
-        }
-
-    );
-
-    return response.data;
-
-};
-
-export const deleteShipment = async (id) => {
-    const response = await api.delete(
-        `/shipments/${id}`,
-        {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-        }
-    );
-
+// =============================
+// Get Live Tracking
+// =============================
+export const getTrackingDetails = async (shipmentId) => {
+    const response = await api.get(`/shipments/${shipmentId}/tracking`);
     return response.data;
 };

@@ -92,6 +92,37 @@
 table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* respect column widths below instead of sizing off content */
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto; /* safety net on narrow screens instead of breaking layout */
+}
+
+/* Explicit column widths (sum to 100%) — keeps every column evenly
+   proportioned regardless of how long any single cell's content is. */
+.col-id { width: 5%; }
+.col-tracking { width: 9%; }
+.col-customer { width: 9%; }
+.col-receiver { width: 7%; }
+.col-items { width: 5%; }
+.col-weight { width: 6%; }
+.col-cost { width: 6%; }
+.col-origin { width: 13%; }
+.col-destination { width: 13%; }
+.col-status { width: 9%; }
+.col-date { width: 8%; }
+.col-actions { width: 10%; }
+
+/* Long addresses wrap onto multiple lines within their fixed-width column
+   instead of forcing the column (and the whole row) to stretch. */
+.col-origin,
+.col-destination,
+.col-customer {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 thead {
@@ -114,6 +145,7 @@ td {
     border-top: 1px solid #e2e8f0;
     color: #1e293b;
     font-size: 0.9rem;
+    vertical-align: top;
 }
 
 tbody tr {

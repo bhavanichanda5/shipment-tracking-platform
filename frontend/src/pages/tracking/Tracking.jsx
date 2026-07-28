@@ -1,233 +1,387 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import {
-  GoogleMap,
-  Marker,
-  DirectionsRenderer,
-  useJsApiLoader
-} from "@react-google-maps/api";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 
-import { getAllShipments } from "../../services/shipmentService";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
+
+import {
+  getAllShipments,
+  updateTruckLocation,
+} from "../../services/shipmentService";
+
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import "../../styles/Tracking.css";
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-const defaultCenter = { lat: 20.5937, lng: 78.9629 };
+const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY;
+const defaultCenter = [20.5937, 78.9629];
 
-const directionsCache = new Map();
+const createCustomIcon = (iconUrl, isTruck = false) => {
+  return L.divIcon({
+    className: "custom-map-pin",
+    html: `
+            <div class="pin-container ${isTruck ? "truck-pin" : ""}">
+                <img src="${iconUrl}" class="pin-icon" alt="pin" />
+            </div>
+        `,
+    iconSize: [38, 48],
+    iconAnchor: [19, 48],
+    popupAnchor: [0, -45],
+  });
+};
 
-// --- Sub-component: Lazy Loaded Map & Live Metrics ---
-const ShipmentMap = React.memo(({ shipment, isLoaded, onMetricsCalculated }) => {
-  const [directions, setDirections] = useState(null);
-  const [truckPos, setTruckPos] = useState(null);
-  const mapRef = useRef(null);
-  const animRef = useRef(null);
+const originIcon = createCustomIcon(
+  "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+);
 
-  const routeKey = `${shipment.origin}->${shipment.destination}`;
-
-  useEffect(() => {
-    if (!isLoaded || !shipment.origin || !shipment.destination || !window.google) return;
-
-    if (directionsCache.has(routeKey)) {
-      const cached = directionsCache.get(routeKey);
-      setDirections(cached);
-      extractMetrics(cached);
-      return;
-    }
-
-    const service = new window.google.maps.DirectionsService();
-    service.route(
-      {
-        origin: shipment.origin,
-        destination: shipment.destination,
-        travelMode: window.google.maps.TravelMode.DRIVING
-      },
-      (result, status) => {
-        if (status === "OK") {
-          directionsCache.set(routeKey, result);
-          setDirections(result);
-          extractMetrics(result);
-        } else {
-          console.warn(`Route request failed for ${shipment.trackingId}: ${status}`);
-        }
-      }
-    );
-  }, [isLoaded, shipment.origin, shipment.destination, routeKey, shipment.trackingId]);
-
-  const extractMetrics = (result) => {
-    if (!result?.routes?.[0]?.legs?.[0]) return;
-    const leg = result.routes[0].legs[0];
-
-    const totalDistanceKm = (leg.distance.value / 1000).toFixed(1);
-    const durationMinutes = Math.round(leg.duration.value / 60);
-
-    const etaDate = new Date();
-    etaDate.setMinutes(etaDate.getMinutes() + durationMinutes);
-
-    if (onMetricsCalculated) {
-      onMetricsCalculated(shipment.trackingId, {
-        distanceKm: totalDistanceKm,
-        durationMinutes,
-        etaText: leg.duration.text,
-        estimatedArrival: etaDate.toLocaleString()
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (!mapRef.current || !directions) return;
-    const bounds = new window.google.maps.LatLngBounds();
-    directions.routes[0].overview_path.forEach((point) => bounds.extend(point));
-    mapRef.current.fitBounds(bounds);
-  }, [directions]);
-
-  useEffect(() => {
-    if (!directions) return;
-
-    const path = directions.routes[0].overview_path;
-    if (!path || path.length === 0) return;
-
-    if (animRef.current) clearInterval(animRef.current);
-
-    let idx = 0;
-    animRef.current = setInterval(() => {
-      if (idx >= path.length) {
-        clearInterval(animRef.current);
-        return;
-      }
-      setTruckPos({ lat: path[idx].lat(), lng: path[idx].lng() });
-      idx++;
-    }, 400);
-
-    return () => {
-      if (animRef.current) clearInterval(animRef.current);
-    };
-  }, [directions]);
-
-  return (
-    <div className="tracking-map">
-      <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "380px", borderRadius: "10px" }}
-        center={truckPos || defaultCenter}
-        zoom={5}
-        onLoad={(map) => {
-          mapRef.current = map;
-        }}
-      >
-        {directions && (
-          <DirectionsRenderer
-            directions={directions}
-            options={{
-              suppressMarkers: false,
-              polylineOptions: {
-                strokeColor: "#2563eb",
-                strokeWeight: 5
-              }
-            }}
-          />
-        )}
-        {truckPos && <Marker position={truckPos} title="Delivery Truck" />}
-      </GoogleMap>
-    </div>
-  );
+const destinationIcon = L.divIcon({
+  className: "custom-package-pin",
+  html: `
+        <div style="
+            font-size: 26px;
+            background: #ffffff;
+            border: 2.5px solid #16a34a;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+        ">
+            📦
+        </div>
+    `,
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+  popupAnchor: [0, -22],
 });
 
-// --- Delay Prediction Engine ---
-const calculateDelayPrediction = (shipment, metrics) => {
+const truckIcon = L.divIcon({
+  className: "custom-truck-pin",
+  html: `
+        <div style="
+            font-size: 26px;
+            background: #ffffff;
+            border: 2.5px solid #2563eb;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            cursor: pointer;
+        ">
+            🚚
+        </div>
+    `,
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+  popupAnchor: [0, -22],
+});
+
+const isValidLatLng = (coords) => {
+  return (
+    Array.isArray(coords) &&
+    coords.length === 2 &&
+    typeof coords[0] === "number" &&
+    !isNaN(coords[0]) &&
+    typeof coords[1] === "number" &&
+    !isNaN(coords[1])
+  );
+};
+
+const toRad = (deg) => (deg * Math.PI) / 180;
+
+// Distance in km between two [lat, lng] points
+const haversineDistanceKm = (a, b) => {
+  if (!isValidLatLng(a) || !isValidLatLng(b)) return 0;
+
+  const R = 6371;
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLon = Math.sin(dLon / 2);
+
+  const h =
+    sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLon * sinDLon;
+
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+};
+
+// Sums distance across a polyline of [lat, lng] points
+const calculateRouteDistanceKm = (points) => {
+  if (!Array.isArray(points) || points.length < 2) return 0;
+
+  let total = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    total += haversineDistanceKm(points[i], points[i + 1]);
+  }
+  return total;
+};
+
+function MapBounds({ points }) {
+  const map = useMap();
+  useEffect(() => {
+    const validPoints = points.filter(isValidLatLng);
+    if (validPoints.length > 0) {
+      const bounds = L.latLngBounds(validPoints);
+      if (validPoints.length >= 2) {
+        map.fitBounds(L.latLngBounds(validPoints), { padding: [50, 50] });
+      }
+    }
+  }, [points, map]);
+  return null;
+}
+
+const calculateDelayPrediction = (shipment) => {
   const statusUpper = String(shipment.status || "").toUpperCase();
   if (statusUpper === "CANCELLED" || statusUpper === "DELIVERED") {
-    return { risk: "NONE", label: "N/A", confidence: "100%", delayReason: "No delay risk." };
+    return {
+      risk: "NONE",
+      label: "N/A",
+      confidence: "100%",
+      delayReason: "No delay risk.",
+    };
   }
 
   const scheduledDate = new Date(shipment.deliveryDate);
   const now = new Date();
 
-  if (now > scheduledDate) {
+  if (!isNaN(scheduledDate.getTime()) && now > scheduledDate) {
     return {
       risk: "HIGH",
       label: "High Delay Risk",
       confidence: "92%",
-      delayReason: "Schedule Exceeded: Shipment past target delivery date."
+      delayReason: "Schedule Exceeded: Shipment past target delivery date.",
     };
   }
 
-  if (metrics?.durationMinutes) {
-    const hoursRemainingInSchedule = (scheduledDate - now) / (1000 * 60 * 60);
-    const hoursNeeded = metrics.durationMinutes / 60;
-
-    if (hoursNeeded > hoursRemainingInSchedule) {
-      return {
-        risk: "HIGH",
-        label: "High Delay Risk",
-        confidence: "88%",
-        delayReason: "Transit Bottleneck: Traffic or route distance exceeds time remaining."
-      };
-    } else if (hoursNeeded > hoursRemainingInSchedule * 0.75) {
-      return {
-        risk: "MEDIUM",
-        label: "Moderate Delay Risk",
-        confidence: "75%",
-        delayReason: "Tight Timeline: Minor disruptions may impact delivery."
-      };
-    }
+  if (statusUpper === "PENDING") {
+    return {
+      risk: "MEDIUM",
+      label: "Moderate Delay Risk",
+      confidence: "75%",
+      delayReason: "Pending Pick-Up: Transit process has not commenced yet.",
+    };
   }
 
   return {
     risk: "LOW",
     label: "On Schedule",
     confidence: "95%",
-    delayReason: "Smooth Transit: Operating within standard timeline."
+    delayReason: "Smooth Transit: Operating within target timeline.",
   };
 };
 
-// --- Timeline Helper ---
-const getShipmentTimeline = (shipment) => {
+// Ordered shipment lifecycle used to derive timeline progress
+const STATUS_ORDER = [
+  "CREATED",
+  "PICKED_UP",
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+];
+
+const getShipmentTimeline = (
+  shipment,
+  currentLocationLabel,
+  currentLocationTime,
+  remainingDistanceKm,
+) => {
   const statusUpper = String(shipment.status || "").toUpperCase();
 
   if (statusUpper === "CANCELLED") {
     return [
-      { title: "Order Placed", location: shipment.origin, time: shipment.shipmentDate, state: "completed" },
-      { title: "Shipment Cancelled", location: "System / Request", time: shipment.deliveryDate || "Terminated", state: "cancelled" }
+      {
+        title: "Order Placed",
+        location: shipment.origin,
+        time: shipment.shipmentDate,
+        state: "completed",
+      },
+      {
+        title: "Shipment Cancelled",
+        location: "System / Request",
+        time: shipment.deliveryDate || "Terminated",
+        state: "cancelled",
+      },
     ];
   }
 
+  if (statusUpper === "FAILED_DELIVERY") {
+    return [
+      {
+        title: "Order Confirmed",
+        location: shipment.origin,
+        time: shipment.shipmentDate,
+        state: "completed",
+      },
+      {
+        title: "Picked Up",
+        location: `${shipment.origin} Hub`,
+        time: shipment.shipmentDate,
+        state: "completed",
+      },
+      {
+        title: "Out for Delivery",
+        location: currentLocationLabel || shipment.origin,
+        time: currentLocationTime
+          ? `Last updated: ${currentLocationTime.toLocaleTimeString()}`
+          : "Live",
+        state: "completed",
+      },
+      {
+        title: "Delivery Failed",
+        location: shipment.destination,
+        time: shipment.deliveryDate || "Attempted",
+        state: "cancelled",
+      },
+    ];
+  }
+
+  // Base progress purely from the recorded status.
+  let rank = STATUS_ORDER.indexOf(statusUpper);
+  if (rank === -1) rank = 0;
+
+  // Let the truck's LIVE position push progress forward too — e.g. once
+  // live route data exists the shipment is clearly moving, and once it's
+  // within a few km of the destination it's effectively "out for delivery"
+  // even if nobody has flipped the status field yet. This is what makes
+  // the panel track the map, Amazon-style, instead of only the status.
+  if (rank >= 1 && rank < 4 && remainingDistanceKm != null) {
+    rank = Math.max(rank, 2); // has live tracking data -> at least in transit
+    if (remainingDistanceKm <= 10) {
+      rank = Math.max(rank, 3); // close to destination -> out for delivery
+    }
+  }
+
   return [
-    { title: "Order Confirmed", location: shipment.origin, time: shipment.shipmentDate, state: "completed" },
-    { title: "Picked Up", location: `${shipment.origin} Hub`, time: shipment.shipmentDate, state: statusUpper === "PENDING" ? "active" : "completed" },
-    { title: "Current Location", location: statusUpper === "DELIVERED" ? shipment.destination : shipment.origin, time: "Live", state: statusUpper === "IN_TRANSIT" ? "active" : statusUpper === "PENDING" ? "upcoming" : "completed" },
-    { title: "Destination Hub", location: shipment.destination, time: "", state: statusUpper === "OUT_FOR_DELIVERY" || statusUpper === "DELIVERED" ? "completed" : "upcoming" },
-    { title: "Delivered", location: shipment.destination, time: shipment.deliveryDate, state: statusUpper === "DELIVERED" ? "completed" : "upcoming" }
+    {
+      title: "Order Confirmed",
+      location: shipment.origin,
+      time: shipment.shipmentDate,
+      state: "completed",
+    },
+    {
+      title: "Picked Up",
+      location: `${shipment.origin} Hub`,
+      time: shipment.shipmentDate,
+      state: rank >= 1 ? "completed" : "active",
+    },
+    {
+      title: "Current Location",
+      location: currentLocationLabel || shipment.origin,
+      time: currentLocationTime
+        ? `Last updated: ${currentLocationTime.toLocaleTimeString()}`
+        : "Live",
+      // Stays "active" (live) the whole time the shipment is moving —
+      // it only becomes irrelevant once actually delivered, which never
+      // reaches this branch since delivered shipments hide the timeline.
+      state: rank === 0 ? "upcoming" : "active",
+    },
+    {
+      title: "Destination Hub",
+      location: shipment.destination,
+      time: "",
+      state: rank >= 3 ? "completed" : rank === 2 ? "active" : "upcoming",
+    },
+    {
+      title: "Delivered",
+      location: shipment.destination,
+      time: shipment.deliveryDate,
+      state: statusUpper === "DELIVERED" ? "completed" : "upcoming",
+    },
   ];
 };
 
-// --- Main Tracking Component ---
 function Tracking() {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY
-  });
-
   const [shipments, setShipments] = useState([]);
-  const [liveMetrics, setLiveMetrics] = useState({});
-  const [expandedId, setExpandedId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
-  // Pagination State
+  const [coordsMap, setCoordsMap] = useState({});
+  const [routes, setRoutes] = useState({});
+  const [truckPositions, setTruckPositions] = useState({});
+  const [truckAddress, setTruckAddress] = useState({});
+  const lastGeocodedIndexRef = useRef({});
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const handleMetricsCalculated = useCallback((trackingId, metrics) => {
-    setLiveMetrics((prev) => ({ ...prev, [trackingId]: metrics }));
-  }, []);
+  const moveTruck = async (shipment) => {
+    const truck = truckPositions[shipment.id];
+    const route = routes[shipment.id];
+
+    if (!truck || !route) return;
+
+    if (shipment.status === "DELIVERED") return;
+
+    if (truck.index >= route.length - 1) return;
+
+    const nextIndex = truck.index + 1;
+    const nextPosition = route[nextIndex];
+    const now = new Date();
+
+    setTruckPositions((prev) => ({
+      ...prev,
+      [shipment.id]: {
+        index: nextIndex,
+        position: nextPosition,
+        updatedAt: now,
+      },
+    }));
+
+    try {
+      await updateTruckLocation(
+        shipment.trackingId,
+        nextPosition[0],
+        nextPosition[1],
+        45,
+        truckAddress[shipment.id],
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (Object.keys(routes).length === 0) return;
+
+    const timer = setInterval(() => {
+      shipments.forEach((shipment) => {
+        moveTruck(shipment);
+      });
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [shipments, routes, truckPositions, truckAddress]);
 
   const loadShipments = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
-      setError("");
       const data = await getAllShipments();
       setShipments(Array.isArray(data) ? data : []);
       setLastUpdated(new Date());
@@ -241,9 +395,197 @@ function Tracking() {
 
   useEffect(() => {
     loadShipments();
-    const interval = setInterval(loadShipments, 20000);
+
+    const interval = setInterval(() => {
+      loadShipments();
+    }, 5000);
+
     return () => clearInterval(interval);
   }, [loadShipments]);
+
+  useEffect(() => {
+    setTruckAddress((prev) => {
+      let changed = false;
+      const next = { ...prev };
+
+      shipments.forEach((shipment) => {
+        if (!next[shipment.id] && shipment.currentLocationName) {
+          next[shipment.id] = shipment.currentLocationName;
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [shipments]);
+
+  const getCoordinates = async (place) => {
+    if (!place) return null;
+    try {
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(place)}&apiKey=${GEOAPIFY_KEY}`,
+      );
+      const data = await response.json();
+      if (!data.features || !data.features.length) return null;
+
+      const [lng, lat] = data.features[0].geometry.coordinates;
+      return [lat, lng];
+    } catch (err) {
+      console.error("Geocoding error:", err);
+      return null;
+    }
+  };
+
+  const getPlaceName = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=${GEOAPIFY_KEY}`,
+      );
+      const data = await response.json();
+      const props = data?.features?.[0]?.properties;
+      if (!props) return null;
+
+      return (
+        props.city ||
+        props.county ||
+        props.state_district ||
+        props.formatted ||
+        null
+      );
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+      return null;
+    }
+  };
+
+  // Resolve the truck's live coordinates into a readable place name.
+  // Throttled so we don't fire a reverse-geocode call on every 3s tick —
+  // only once initially, and again every few hops down the route.
+  useEffect(() => {
+    Object.entries(truckPositions).forEach(([id, truck]) => {
+      if (!truck || !isValidLatLng(truck.position)) return;
+
+      const lastIdx = lastGeocodedIndexRef.current[id];
+      const shouldGeocode =
+        lastIdx === undefined || Math.abs(truck.index - lastIdx) >= 5;
+
+      if (!shouldGeocode) return;
+      lastGeocodedIndexRef.current[id] = truck.index;
+
+      getPlaceName(truck.position[0], truck.position[1]).then((name) => {
+        if (name) {
+          setTruckAddress((prev) => ({ ...prev, [id]: name }));
+        }
+      });
+    });
+  }, [truckPositions]);
+
+  const processShipmentLocations = async (shipment) => {
+    if (!shipment.origin || !shipment.destination) return;
+
+    try {
+      let originCoords = coordsMap[shipment.id]?.origin;
+      let destCoords = coordsMap[shipment.id]?.destination;
+
+      if (!originCoords) originCoords = await getCoordinates(shipment.origin);
+      if (!destCoords) destCoords = await getCoordinates(shipment.destination);
+
+      if (originCoords && destCoords) {
+        setCoordsMap((prev) => ({
+          ...prev,
+          [shipment.id]: { origin: originCoords, destination: destCoords },
+        }));
+
+        if (!routes[shipment.id]) {
+          // If the backend already has a live GPS fix for this shipment
+          // (persisted from a previous session), resume the route from
+          // there instead of the original origin — this is what keeps the
+          // map, remaining distance, and route line continuous across a
+          // refresh or app reopen, rather than resetting to the start.
+          const hasLiveTruckPosition =
+            shipment.currentLatitude != null &&
+            shipment.currentLongitude != null;
+
+          const routeStart = hasLiveTruckPosition
+            ? [shipment.currentLatitude, shipment.currentLongitude]
+            : originCoords;
+
+          const url = `https://api.geoapify.com/v1/routing?waypoints=${routeStart[0]},${routeStart[1]}|${destCoords[0]},${destCoords[1]}&mode=drive&apiKey=${GEOAPIFY_KEY}`;
+
+          const response = await fetch(url);
+          const routeData = await response.json();
+
+          if (
+            response.ok &&
+            routeData.features &&
+            routeData.features.length > 0
+          ) {
+            const rawCoords = routeData.features[0].geometry.coordinates;
+            let polylineCoords = [];
+
+            if (Array.isArray(rawCoords[0][0])) {
+              polylineCoords = rawCoords.flatMap((line) =>
+                line.map((pt) => [pt[1], pt[0]]),
+              );
+            } else {
+              polylineCoords = rawCoords.map((pt) => [pt[1], pt[0]]);
+              console.log(polylineCoords);
+            }
+
+            setRoutes((prev) => ({
+              ...prev,
+              [shipment.id]: polylineCoords,
+            }));
+
+            setTruckPositions((prev) => {
+              if (prev[shipment.id]) {
+                return prev;
+              }
+
+              return {
+                ...prev,
+                [shipment.id]: {
+                  index: 0,
+                  position: hasLiveTruckPosition
+                    ? routeStart
+                    : polylineCoords[0],
+                  updatedAt: shipment.lastLocationUpdate
+                    ? new Date(shipment.lastLocationUpdate)
+                    : new Date(),
+                },
+              };
+            });
+            console.log("Truck Initialized", shipment.id);
+            console.log(polylineCoords.length);
+          } else {
+            const fallbackRoute = [routeStart, destCoords];
+
+            setRoutes((prev) => ({
+              ...prev,
+              [shipment.id]: fallbackRoute,
+            }));
+
+            setTruckPositions((prev) => ({
+              ...prev,
+              [shipment.id]: {
+                index: 0,
+                position: routeStart,
+                updatedAt: shipment.lastLocationUpdate
+                  ? new Date(shipment.lastLocationUpdate)
+                  : new Date(),
+              },
+            }));
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Routing error:", err);
+    }
+  };
+
+  useEffect(() => {
+    shipments.forEach((shipment) => processShipmentLocations(shipment));
+  }, [shipments]);
 
   const filteredShipments = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
@@ -274,12 +616,11 @@ function Tracking() {
       .sort((a, b) => new Date(b.shipmentDate) - new Date(a.shipmentDate));
   }, [shipments, searchTerm, fromDate, toDate]);
 
-  // Reset to page 1 on search
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, fromDate, toDate]);
 
-  // Pagination Math
+  // Pagination
   const totalPages = Math.ceil(filteredShipments.length / itemsPerPage) || 1;
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -289,17 +630,16 @@ function Tracking() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  if (!isLoaded) {
-    return <div className="tracking-loading-screen">Loading Map Engine & Models...</div>;
-  }
-
   return (
     <div className="tracking-view">
       {/* Header */}
       <div className="tracking-header">
         <div>
           <h1>Live Delivery Monitoring & ETA Insights</h1>
-          <p>Real-time logistics monitoring, automated ETA calculations, and delay forecasts.</p>
+          <p>
+            Real-time logistics tracking, automated route plotting, and delay
+            forecasts.
+          </p>
         </div>
         <div className="tracking-meta">
           <span className="meta-label">Auto Refresh:</span>
@@ -307,7 +647,7 @@ function Tracking() {
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
+      {/* Controls */}
       <div className="tracking-search-panel">
         <input
           type="text"
@@ -318,11 +658,19 @@ function Tracking() {
         <div className="tracking-date-controls">
           <label>
             From
-            <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
           </label>
           <label>
             To
-            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
           </label>
         </div>
         <button onClick={loadShipments} disabled={loading}>
@@ -332,7 +680,6 @@ function Tracking() {
 
       {error && <div className="tracking-error">{error}</div>}
 
-      {/* KPI Cards */}
       <div className="tracking-summary">
         <div>
           <strong>{filteredShipments.length}</strong>
@@ -342,7 +689,7 @@ function Tracking() {
           <strong>
             {
               filteredShipments.filter((s) => {
-                const pred = calculateDelayPrediction(s, liveMetrics[s.trackingId]);
+                const pred = calculateDelayPrediction(s);
                 return pred.risk === "HIGH";
               }).length
             }
@@ -351,30 +698,69 @@ function Tracking() {
         </div>
       </div>
 
-      {/* Shipment Accordion List */}
       <div className="tracking-list">
         {currentShipments.length > 0 ? (
           currentShipments.map((shipment) => {
-            const isCancelled = String(shipment.status || "").toUpperCase() === "CANCELLED";
-            const metrics = liveMetrics[shipment.trackingId];
-            const delayPrediction = calculateDelayPrediction(shipment, metrics);
+            const isCancelled =
+              String(shipment.status || "").toUpperCase() === "CANCELLED";
+            const delayPrediction = calculateDelayPrediction(shipment);
             const isExpanded = expandedId === shipment.id;
+
+            const route = routes[shipment.id];
+            const truck = truckPositions[shipment.id];
+            const originCoord = coordsMap[shipment.id]?.origin;
+            const destCoord = coordsMap[shipment.id]?.destination;
+
+            // Only the segment from the truck's current position onward —
+            // the travelled portion (origin -> truck) is dropped from the
+            // line so the route visibly shrinks as the truck advances,
+            // Zepto/Swiggy-style.
+            const remainingRoute =
+              Array.isArray(route) && truck ? route.slice(truck.index) : route;
+
+            const remainingDistanceKm =
+              Array.isArray(remainingRoute) && remainingRoute.length > 1
+                ? calculateRouteDistanceKm(remainingRoute)
+                : null;
+
+            const mapPoints =
+              Array.isArray(remainingRoute) && remainingRoute.length > 0
+                ? [...remainingRoute, destCoord].filter(isValidLatLng)
+                : [originCoord, destCoord].filter(isValidLatLng);
+
+            const currentLocationLabel =
+              truckAddress[shipment.id] ||
+              (truck && isValidLatLng(truck.position)
+                ? `${truck.position[0].toFixed(4)}, ${truck.position[1].toFixed(4)}`
+                : shipment.origin);
+
+            const currentLocationTime =
+              truck?.updatedAt ||
+              (shipment.lastLocationUpdate
+                ? new Date(shipment.lastLocationUpdate)
+                : null);
 
             return (
               <div
                 className={`tracking-card ${isExpanded ? "expanded" : ""}`}
                 key={shipment.id || shipment.trackingId}
               >
-                {/* Compact Row Header */}
-                <div className="tracking-card-compact" onClick={() => toggleExpand(shipment.id)}>
+                <div
+                  className="tracking-card-compact"
+                  onClick={() => toggleExpand(shipment.id)}
+                >
                   <div className="tracking-info-main">
                     <h2>{shipment.trackingId}</h2>
-                    <span className="customer-sub">Customer: {shipment.customerName}</span>
+                    <span className="customer-sub">
+                      Customer: {shipment.customerName}
+                    </span>
                   </div>
 
                   <div className="tracking-status-group">
                     {!isCancelled && (
-                      <span className={`risk-pill risk-${delayPrediction.risk.toLowerCase()}`}>
+                      <span
+                        className={`risk-pill risk-${delayPrediction.risk.toLowerCase()}`}
+                      >
                         {delayPrediction.label} ({delayPrediction.confidence})
                       </span>
                     )}
@@ -396,7 +782,6 @@ function Tracking() {
                   </div>
                 </div>
 
-                {/* Collapsible Detail Section */}
                 {isExpanded && (
                   <div className="tracking-card-expanded-body">
                     <div className="tracking-card-body">
@@ -409,53 +794,177 @@ function Tracking() {
                         <p>{shipment.destination}</p>
                       </div>
                       <div>
-                        <label>Distance / Time</label>
-                        <p>{metrics ? `${metrics.distanceKm} km (${metrics.etaText})` : "Calculating..."}</p>
+                        <label>Shipment Date</label>
+                        <p>{shipment.shipmentDate || "N/A"}</p>
                       </div>
                       <div>
-                        <label>Calculated Dynamic ETA</label>
-                        <p>{isCancelled ? "Cancelled" : metrics?.estimatedArrival || shipment.deliveryDate}</p>
+                        <label>Target Delivery Date</label>
+                        <p>
+                          {isCancelled
+                            ? "Cancelled"
+                            : shipment.deliveryDate || "N/A"}
+                        </p>
+                      </div>
+
+                      {/* Step 6: Show Remaining Distance */}
+                      <div>
+                        <label>Remaining Distance</label>
+                        <p>
+                          {shipment.status === "DELIVERED"
+                            ? "0 km"
+                            : remainingDistanceKm !== null
+                              ? `${remainingDistanceKm.toFixed(1)} km`
+                              : shipment.remainingDistance}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label>Estimated Arrival</label>
+                        <p>
+                          {shipment.status === "DELIVERED"
+                            ? "Delivered"
+                            : shipment.estimatedDeliveryTime
+                              ? new Date(
+                                  shipment.estimatedDeliveryTime,
+                                ).toLocaleString()
+                              : "--"}
+                        </p>
+                      </div>
+
+                      {/* Step 8: Show Last GPS Update */}
+                      <div>
+                        <label>Last GPS Update</label>
+                        <p>
+                          {shipment.lastLocationUpdate
+                            ? new Date(
+                                shipment.lastLocationUpdate,
+                              ).toLocaleTimeString()
+                            : "--"}
+                        </p>
                       </div>
                     </div>
 
                     {delayPrediction.risk === "HIGH" && !isCancelled && (
                       <div className="delay-warning-box">
-                        <strong>⚠️ Delay Alert:</strong> {delayPrediction.delayReason}
+                        <strong>⚠️ Delay Alert:</strong>{" "}
+                        {delayPrediction.delayReason}
                       </div>
                     )}
 
                     <div className="tracking-live-section">
-                      {isCancelled ? (
+                      {isCancelled || shipment.status === "DELIVERED" ? (
                         <div className="tracking-map-disabled">
-                          <div className="cancelled-icon">✕</div>
-                          <h3>Tracking Terminated</h3>
-                          <p>This shipment was cancelled. Dynamic live monitoring is suspended.</p>
+                          <div
+                            className="cancelled-icon"
+                            style={{ fontSize: "50px" }}
+                          >
+                            📦
+                          </div>
+                          <h3>
+                            {shipment.status === "DELIVERED"
+                              ? "Shipment Delivered"
+                              : "Tracking Terminated"}
+                          </h3>
+
+                          <p>
+                            {shipment.status === "DELIVERED"
+                              ? "Package has reached the destination."
+                              : "This shipment was cancelled. Live map rendering is suspended."}
+                          </p>
                         </div>
                       ) : (
-                        <ShipmentMap
-                          shipment={shipment}
-                          isLoaded={isLoaded}
-                          onMetricsCalculated={handleMetricsCalculated}
-                        />
+                        <div className="tracking-map">
+                          {isValidLatLng(originCoord) && (
+                            <MapContainer
+                              key={`${shipment.id}-${shipment.status}`} /*key={`${shipment.id}-${expandedId}`} */
+                              center={originCoord}
+                              zoom={6}
+                              style={{
+                                width: "100%",
+                                height: "380px",
+                                borderRadius: "10px",
+                              }}
+                            >
+                              <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                              <MapBounds points={mapPoints} />
+
+                              {/* Origin Marker (Red Pin) */}
+                              {isValidLatLng(originCoord) && (
+                                <Marker
+                                  position={originCoord}
+                                  icon={originIcon}
+                                >
+                                  <Popup>Origin: {shipment.origin}</Popup>
+                                </Marker>
+                              )}
+
+                              {/* Destination Marker (Box Emoji Pin) */}
+                              {isValidLatLng(destCoord) && (
+                                <Marker
+                                  position={destCoord}
+                                  icon={destinationIcon}
+                                >
+                                  <Popup>
+                                    Destination: {shipment.destination}
+                                  </Popup>
+                                </Marker>
+                              )}
+
+                              {/* Route Line — only truck's current position -> destination */}
+                              {Array.isArray(remainingRoute) &&
+                                remainingRoute.length > 0 && (
+                                  <Polyline
+                                    positions={remainingRoute}
+                                    color="#0284c7"
+                                    weight={4}
+                                    dashArray="8, 8"
+                                  />
+                                )}
+
+                              {/* Live Animated Truck Marker */}
+                              {truck &&
+                                truck.position &&
+                                truck.position.length === 2 &&
+                                !isNaN(truck.position[0]) &&
+                                !isNaN(truck.position[1]) && (
+                                  <Marker
+                                    position={truck.position}
+                                    icon={truckIcon}
+                                  />
+                                )}
+                            </MapContainer>
+                          )}
+                        </div>
                       )}
 
                       <div className="tracking-timeline">
-                        {getShipmentTimeline(shipment).map((step, index) => (
-                          <div key={index} className="timeline-item">
-                            <div className={`timeline-dot ${step.state}`} />
-                            <div className="timeline-content">
-                              <h4>{step.title}</h4>
-                              <p>{step.location}</p>
-                              {step.time && <small>{step.time}</small>}
+                        {shipment.status !== "DELIVERED" &&
+                          getShipmentTimeline(
+                            shipment,
+                            currentLocationLabel,
+                            currentLocationTime,
+                            remainingDistanceKm,
+                          ).map((step, index) => (
+                            <div key={index} className="timeline-item">
+                              <div className={`timeline-dot ${step.state}`} />
+                              <div className="timeline-content">
+                                <h4>{step.title}</h4>
+                                <p>{step.location}</p>
+                                {step.time && <small>{step.time}</small>}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
 
                     <div className="tracking-card-footer">
                       <div>Auto Monitoring: Active</div>
-                      <div>{isCancelled ? "Shipment Cancelled" : `ETA Status: ${delayPrediction.label}`}</div>
+                      <div>
+                        {isCancelled
+                          ? "Shipment Cancelled"
+                          : `ETA Status: ${delayPrediction.label}`}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -463,16 +972,19 @@ function Tracking() {
             );
           })
         ) : (
-          <div className="no-shipments-found">No shipments match your criteria.</div>
+          <div className="no-shipments-found">
+            No shipments match your search criteria.
+          </div>
         )}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       <div className="pagination-container">
         <span className="pagination-info">
-          Showing <strong>{filteredShipments.length > 0 ? indexOfFirst + 1 : 0}</strong> to{" "}
-          <strong>{Math.min(indexOfLast, filteredShipments.length)}</strong> of{" "}
-          <strong>{filteredShipments.length}</strong> shipments
+          Showing{" "}
+          <strong>{filteredShipments.length > 0 ? indexOfFirst + 1 : 0}</strong>{" "}
+          to <strong>{Math.min(indexOfLast, filteredShipments.length)}</strong>{" "}
+          of <strong>{filteredShipments.length}</strong> shipments
         </span>
 
         <div className="pagination-controls">

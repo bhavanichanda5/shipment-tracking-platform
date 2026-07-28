@@ -3,22 +3,18 @@ import { getAllShipments } from "../../services/shipmentService";
 import "../../styles/Reports.css";
 
 const renderStatusBadge = (status) => {
-    if (!status) return null;
+  if (!status) return null;
 
-    // Formats "PICKED_UP" or "Picked Up" -> "picked-up"
-    const statusClass = String(status)
-        .toLowerCase()
-        .trim()
-        .replace(/[\s_]+/g, '-');
+  // Formats "PICKED_UP" or "Picked Up" -> "picked-up"
+  const statusClass = String(status)
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_]+/g, "-");
 
-    // Display label: "PICKED_UP" -> "PICKED UP"
-    const label = String(status).replace(/_/g, ' ');
+  // Display label: "PICKED_UP" -> "PICKED UP"
+  const label = String(status).replace(/_/g, " ");
 
-    return (
-        <span className={`status-pill ${statusClass}`}>
-            {label}
-        </span>
-    );
+  return <span className={`status-pill ${statusClass}`}>{label}</span>;
 };
 
 function Reports() {
@@ -68,8 +64,12 @@ function Reports() {
           shipment.customerName,
           shipment.origin,
           shipment.destination,
-          shipment.status
-        ].some((val) => String(val || "").toLowerCase().includes(term));
+          shipment.status,
+        ].some((val) =>
+          String(val || "")
+            .toLowerCase()
+            .includes(term),
+        );
 
       if (!matchesSearch) return false;
 
@@ -103,7 +103,7 @@ function Reports() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentShipments = filteredShipments.slice(
     indexOfFirstItem,
-    indexOfLastItem
+    indexOfLastItem,
   );
 
   // CSV Export Logic
@@ -116,7 +116,7 @@ function Reports() {
       "destination",
       "status",
       "shipmentDate",
-      "deliveryDate"
+      "deliveryDate",
     ];
     const csvRows = [keys.join(",")];
 
@@ -129,7 +129,7 @@ function Reports() {
     });
 
     const blob = new Blob([csvRows.join("\n")], {
-      type: "text/csv;charset=utf-8;"
+      type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -153,7 +153,9 @@ function Reports() {
       <div className="reports-header">
         <div>
           <h1>Shipment Reports</h1>
-          <p>Browse, filter, and export detailed delivery and logistics records.</p>
+          <p>
+            Browse, filter, and export detailed delivery and logistics records.
+          </p>
         </div>
         <button
           className="reports-download-btn"
@@ -248,10 +250,6 @@ function Reports() {
                 </tr>
               ) : (
                 currentShipments.map((shipment) => {
-                  const statusKey = String(shipment.status || "")
-                    .toLowerCase()
-                    .replace(/[\s_]+/g, "-");
-
                   return (
                     <tr key={shipment.id || shipment.trackingId}>
                       <td className="fw-bold">#{shipment.id}</td>
@@ -259,16 +257,7 @@ function Reports() {
                       <td>{shipment.customerName}</td>
                       <td>{shipment.origin}</td>
                       <td>{shipment.destination}</td>
-                      <td>
-                        <span
-                            className={`status-pill ${String(shipment.status || "")
-                            .toLowerCase()
-                            .trim()
-                            .replace(/[\s_]+/g, "-")}`}
-                        >
-                            {String(shipment.status || "").replace(/_/g, " ")}
-                        </span>
-                        </td>
+                      <td>{renderStatusBadge(shipment.status)}</td>
                       <td>{shipment.shipmentDate || "--"}</td>
                       <td>{shipment.deliveryDate || "--"}</td>
                     </tr>
@@ -322,7 +311,7 @@ function Reports() {
                     (page) =>
                       page === 1 ||
                       page === totalPages ||
-                      Math.abs(page - currentPage) <= 1
+                      Math.abs(page - currentPage) <= 1,
                   )
                   .map((page, index, array) => {
                     const prevPage = array[index - 1];

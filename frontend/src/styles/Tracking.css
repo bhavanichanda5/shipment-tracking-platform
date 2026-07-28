@@ -1,3 +1,4 @@
+/* Layout & Container */
 .tracking-view {
   padding: 25px;
   display: flex;
@@ -44,6 +45,38 @@
   color: #334155;
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+/* Custom Leaflet Map Pin Styles */
+.custom-map-pin {
+  background: transparent;
+  border: none;
+}
+
+.pin-container {
+  width: 38px;
+  height: 48px;
+  background: rgba(220, 240, 225, 0.95);
+  border: 2px solid #84cc16;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.pin-container.truck-pin {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #3b82f6;
+}
+
+.pin-icon {
+  transform: rotate(45deg);
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 
 /* Search Bar */
@@ -353,6 +386,9 @@
 .status-pill.delivered { background: #16a34a; }
 .status-pill.pending { background: #d97706; }
 .status-pill.cancelled { background: #dc2626; }
+.status-pill.picked_up,
+.status-pill.picked-up { background: #0284c7; }
+.status-pill.created { background: #f59e0b; }
 
 .risk-pill {
   padding: 5px 10px;
@@ -415,16 +451,10 @@
   border-radius: 6px;
   cursor: pointer;
   color: #334155;
-  transition: all 0.2s ease;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
 }
 
 .pagination-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -434,32 +464,23 @@
 }
 
 .pagination-number {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  font-size: 0.825rem;
+  border: 1px solid #cbd5e1;
   background-color: #ffffff;
   border-radius: 6px;
-  font-size: 0.825rem;
   cursor: pointer;
+  color: #334155;
 }
 
 .pagination-number.active {
   background-color: #2563eb;
   color: #ffffff;
   border-color: #2563eb;
-  font-weight: 600;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-@media (max-width: 860px) {
-  .tracking-live-section { flex-direction: column; }
-  .tracking-card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
 }

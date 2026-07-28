@@ -1,12 +1,11 @@
 package com.shiptrack.admin.shipment.entity;
 
+import com.shiptrack.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-//import java.util.UUID;
-
-import com.shiptrack.auth.entity.User;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "shipments")
@@ -27,16 +26,16 @@ public class Shipment {
     @Column(nullable = false)
     private String customerName;
 
-    @Column(nullable = true)
+    @Column
     private String receiverName;
 
-    @Column(nullable = true)
+    @Column
     private String noOfItems;
 
-    @Column(nullable = true)
+    @Column
     private String totalWeightOfItems;
 
-    @Column(nullable = true)
+    @Column
     private String shipmentCost;
 
     @Column(nullable = false)
@@ -52,9 +51,61 @@ public class Shipment {
 
     private LocalDate deliveryDate;
 
-   @ManyToOne
+    // ==========================
+    // ORIGIN LOCATION
+    // ==========================
+
+    @Column(name = "origin_latitude")
+    private Double originLatitude;
+
+    @Column(name = "origin_longitude")
+    private Double originLongitude;
+
+    // ==========================
+    // DESTINATION LOCATION
+    // ==========================
+
+    @Column(name = "destination_latitude")
+    private Double destinationLatitude;
+
+    @Column(name = "destination_longitude")
+    private Double destinationLongitude;
+
+    // ==========================
+    // LIVE TRUCK LOCATION
+    // ==========================
+
+    @Column(name = "current_latitude")
+    private Double currentLatitude;
+
+    @Column(name = "current_longitude")
+    private Double currentLongitude;
+
+    @Column(name = "current_location_name")
+    private String currentLocationName;
+
+    // ==========================
+    // LIVE TRACKING DETAILS
+    // ==========================
+
+    @Column(name = "truck_speed")
+    private Double truckSpeed;
+
+    @Column(name = "remaining_distance")
+    private Double remainingDistance;
+
+    @Column(name = "estimated_delivery_time")
+    private LocalDateTime estimatedDeliveryTime;
+
+    @Column(name = "last_location_update")
+    private LocalDateTime lastLocationUpdate;
+
+    // ==========================
+    // CUSTOMER
+    // ==========================
+
+    @ManyToOne
     @JoinColumn(name = "customer_id")
     private User customerId;
-    
 
 }

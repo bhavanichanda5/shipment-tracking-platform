@@ -14,7 +14,7 @@ function Delivery() {
 
         try {
             const data = await getAllShipments();
-            setShipments(data);
+            setShipments(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
             setError("Unable to load delivery data.");
