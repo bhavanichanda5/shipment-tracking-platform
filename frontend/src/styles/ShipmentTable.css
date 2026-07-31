@@ -769,3 +769,11 @@ button[type="submit"]:active {
 .btn-cancel:hover {
     background-color: #dc2626 !important;
 }
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
