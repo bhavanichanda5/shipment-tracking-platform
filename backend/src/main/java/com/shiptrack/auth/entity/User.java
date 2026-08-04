@@ -25,13 +25,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User 
-{
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Allow null during schema migration; existing rows may not have a name
     @Column(nullable = true)
     private String name;
 

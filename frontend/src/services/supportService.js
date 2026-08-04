@@ -1,9 +1,6 @@
 import api from "./api";
 
-// ==============================
 // Dashboard Statistics
-// ==============================
-
 export const getSupportDashboard = async () => {
 
     const response = await api.get(
@@ -19,10 +16,7 @@ export const getSupportDashboard = async () => {
 
 };
 
-// ==============================
 // Get All Shipments
-// ==============================
-
 export const getAllShipments = async () => {
 
     const response = await api.get(
@@ -38,10 +32,7 @@ export const getAllShipments = async () => {
 
 };
 
-// ==============================
 // Get All Users
-// ==============================
-
 export const getAllUsers = async () => {
 
     const response = await api.get(
@@ -57,10 +48,7 @@ export const getAllUsers = async () => {
 
 };
 
-// ==============================
 // Update Shipment
-// ==============================
-
 export const updateShipment = async (id, shipment) => {
 
     const response = await api.put(

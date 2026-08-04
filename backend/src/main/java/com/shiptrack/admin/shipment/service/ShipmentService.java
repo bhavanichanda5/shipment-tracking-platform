@@ -52,8 +52,7 @@ public class ShipmentService {
         }
 
         if (shipment.getCustomerId() != null && shipment.getCustomerId().getId() != null) {
-            // FIX: Pass the inner Long ID (.getId()) to the repository, not the object
-            // itself
+
             User customer = userRepository.findById(shipment.getCustomerId().getId())
                     .orElseThrow(() -> new RuntimeException("Customer not found"));
 
@@ -64,10 +63,6 @@ public class ShipmentService {
         shipment.setTotalWeightOfItems(formatWeight(shipment.getTotalWeightOfItems()));
         shipment.setShipmentCost(formatCost(shipment.getShipmentCost()));
 
-        // Resolve the human-readable origin/destination into real coordinates up
-        // front. Without this, destinationLatitude/Longitude stay null, which
-        // made every live-location ping fall back to a 0 km "distance" and the
-        // shipment got auto-marked DELIVERED within a couple of polling ticks.
         geocodeOriginAndDestination(shipment);
 
         Shipment saved = shipmentRepository1.save(shipment);
@@ -95,7 +90,6 @@ public class ShipmentService {
             existingShipment.setCustomerId(null);
         }
 
-        // --- FORMAT WEIGHT & COST IN BACKEND ---
         existingShipment.setTotalWeightOfItems(formatWeight(shipment.getTotalWeightOfItems()));
         existingShipment.setShipmentCost(formatCost(shipment.getShipmentCost()));
 
@@ -116,9 +110,6 @@ public class ShipmentService {
         existingShipment.setShipmentDate(shipment.getShipmentDate());
         existingShipment.setDeliveryDate(shipment.getDeliveryDate());
 
-        // Re-resolve coordinates when the address text changed, and also
-        // backfill them for older records saved before geocoding existed —
-        // simply editing and re-saving a shipment now heals it.
         if (originChanged) {
             existingShipment.setOriginLatitude(null);
             existingShipment.setOriginLongitude(null);
@@ -177,9 +168,6 @@ public class ShipmentService {
         return "₹" + cost;
     }
 
-    // Fills in origin/destination lat-lng from the address text, but only
-    // where they're currently missing — never overwrites coordinates that
-    // are already present.
     private void geocodeOriginAndDestination(Shipment shipment) {
         if (shipment.getOriginLatitude() == null || shipment.getOriginLongitude() == null) {
             double[] originCoords = geoapifyService.forwardGeocode(shipment.getOrigin());
@@ -204,9 +192,7 @@ public class ShipmentService {
         Shipment shipment = shipmentRepository.findByTrackingId(trackingId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found : " + trackingId));
 
-        // -------------------------
         // Save Current GPS Location
-        // -------------------------
         shipment.setCurrentLatitude(request.getCurrentLatitude());
         shipment.setCurrentLongitude(request.getCurrentLongitude());
         shipment.setTruckSpeed(request.getTruckSpeed());
@@ -217,9 +203,7 @@ public class ShipmentService {
             shipment.setCurrentLocationName(request.getCurrentLocationName());
         }
 
-        // -------------------------
         // Calculate Remaining Distance
-        // -------------------------
         GeoapifyService.RouteMetrics metrics = geoapifyService.calculateRouteMetrics(
                 request.getCurrentLatitude(),
                 request.getCurrentLongitude(),
@@ -231,21 +215,12 @@ public class ShipmentService {
         if (metricsAvailable) {
             shipment.setRemainingDistance(metrics.distanceKm());
 
-            // -------------------------
             // Calculate ETA
-            // -------------------------
             LocalDateTime eta = LocalDateTime.now().plusMinutes(metrics.durationMinutes().longValue());
 
             shipment.setEstimatedDeliveryTime(eta);
         }
-        // If metrics couldn't be calculated (e.g. destination coordinates are
-        // still missing, or the routing API call failed), we deliberately
-        // leave remainingDistance/estimatedDeliveryTime untouched rather than
-        // zeroing them out — a failed lookup must never look like "arrived".
-
-        // -------------------------
         // Auto Delivered
-        // -------------------------
         if (metricsAvailable && metrics.distanceKm() <= 0.20) { // within 200 meters
 
             shipment.setStatus(ShipmentStatus.DELIVERED);
@@ -285,9 +260,6 @@ public class ShipmentService {
             shipment.setRemainingDistance(0.0);
         }
 
-        // If the shipment has moved on but no driver-app/IoT GPS ping has ever
-        // arrived for it, fall back to the origin so "Current Location" has
-        // real data to show instead of staying blank.
         if (shipment.getCurrentLocationName() == null
                 && (request.getStatus() == ShipmentStatus.IN_TRANSIT
                         || request.getStatus() == ShipmentStatus.OUT_FOR_DELIVERY)) {
