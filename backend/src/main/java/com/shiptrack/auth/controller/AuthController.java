@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shiptrack.auth.dto.AuthResponse;
+import com.shiptrack.auth.dto.Googleauthrequest;
 import com.shiptrack.auth.dto.RegisterRequest;
 import com.shiptrack.auth.service.AuthService;
 
@@ -20,18 +21,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController 
-{
+public class AuthController {
     private final AuthService authService;
 
-    public AuthController(AuthService authService) 
-    {
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) 
-    {
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
 
         AuthResponse response = authService.register(request);
 
@@ -40,16 +38,23 @@ public class AuthController
                 .body(response);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 
-   @PostMapping("/login")
-public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        System.out.println("******** LOGIN API HIT ********");
 
-    System.out.println("******** LOGIN API HIT ********");
+        AuthResponse response = authService.login(request);
 
-    AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
 
-    return ResponseEntity.ok(response);
-}
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleAuth(@RequestBody Googleauthrequest request) {
+
+        AuthResponse response = authService.googleAuth(request);
+
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/profile")
     public String profile(Authentication authentication) {

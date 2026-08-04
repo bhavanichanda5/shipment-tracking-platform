@@ -9,3 +9,8 @@ export const login = async (loginData) => {
     const response = await api.post("/auth/login", loginData);
     return response.data;
 };
+
+export const googleLogin = async (idToken) => {
+    const response = await api.post("/auth/google", { idToken });
+    return response.data;
+};

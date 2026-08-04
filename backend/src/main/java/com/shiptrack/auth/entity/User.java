@@ -43,6 +43,9 @@ public class User {
     @Column(nullable = false, length = 30)
     private Role role;
 
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

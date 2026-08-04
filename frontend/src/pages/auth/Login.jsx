@@ -1,7 +1,9 @@
 import "../../styles/Login.css";
 
 import { useState } from "react";
-import { login } from "../../services/authService";
+import { login, googleLogin } from "../../services/authService";
+import { applyAuthResponse } from "../../utils/applyAuth";
+import GoogleSignInButton from "../../components/GoogleSignInButton";
 import { Link, useNavigate } from "react-router-dom";
 
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
@@ -31,36 +33,20 @@ function Login() {
     try {
       const response = await login(formData);
 
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("username", response.username);
-      localStorage.setItem("name", response.name || "");
-      localStorage.setItem("role", response.role);
-      window.dispatchEvent(new Event("nameChanged"));
-
-      switch (response.role) {
-        case "ADMIN":
-          navigate("/admin");
-          break;
-
-        case "CUSTOMER":
-          navigate("/customer");
-          break;
-
-        case "BUSINESS_CLIENT":
-          navigate("/business_client");
-          break;
-
-        case "LOGISTICS_OPERATOR":
-          navigate("/logistics_operator");
-          break;
-
-        case "SUPPORT_AGENT":
-          navigate("/support_agent");
-          break;
-
-        default:
-          navigate("/login");
+      applyAuthResponse(response, navigate);
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.message || error.response.data);
+      } else {
+        alert(error.message);
       }
+    }
+  };
+
+  const handleGoogleSuccess = async (idToken) => {
+    try {
+      const response = await googleLogin(idToken);
+      applyAuthResponse(response, navigate);
     } catch (error) {
       if (error.response) {
         alert(error.response.data.message || error.response.data);
@@ -120,6 +106,12 @@ function Login() {
             <button type="submit" className="login-btn">
               Sign In
             </button>
+
+            <div className="divider">
+              <span>OR</span>
+            </div>
+
+            <GoogleSignInButton onSuccess={handleGoogleSuccess} />
           </form>
 
           <p className="bottom-text">

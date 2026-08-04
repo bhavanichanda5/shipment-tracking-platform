@@ -10,7 +10,8 @@ api.interceptors.request.use((config) => {
 
     const isAuthRequest =
         config.url === "/auth/login" ||
-        config.url === "/auth/register";
+        config.url === "/auth/register" ||
+        config.url === "/auth/google";
 
     if (token && !isAuthRequest) {
         config.headers.Authorization = `Bearer ${token}`;
