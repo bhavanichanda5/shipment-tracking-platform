@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shiptrack.auth.dto.AuthResponse;
+import com.shiptrack.auth.dto.ForgotPasswordRequest;
 import com.shiptrack.auth.dto.Googleauthrequest;
+import com.shiptrack.auth.dto.MessageResponse;
 import com.shiptrack.auth.dto.RegisterRequest;
+import com.shiptrack.auth.dto.ResetPasswordRequest;
 import com.shiptrack.auth.service.AuthService;
 
 import com.shiptrack.auth.dto.LoginRequest;
@@ -61,6 +64,23 @@ public class AuthController {
 
         return "Logged in as : " + authentication.getName();
 
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        System.out.println("******** FORGOT PASSWORD HIT: " + request.getUsername() + " ********");
+        authService.forgotPassword(request.getUsername());
+
+        return ResponseEntity.ok(
+                new MessageResponse("If an account with that username exists, a password reset link has been sent."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
+
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+
+        return ResponseEntity.ok(new MessageResponse("Your password has been reset successfully."));
     }
 
 }
