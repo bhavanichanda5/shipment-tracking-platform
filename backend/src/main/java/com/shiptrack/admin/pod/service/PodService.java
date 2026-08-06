@@ -18,6 +18,8 @@ import com.shiptrack.admin.pod.entity.VerificationMethod;
 import com.shiptrack.admin.pod.repository.PodRecordRepository;
 import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.repository.ShipmentRepository;
+import com.shiptrack.notification.entity.NotificationType;
+import com.shiptrack.notification.service.NotificationService;
 
 @Service
 public class PodService {
@@ -26,17 +28,20 @@ public class PodService {
     private final ShipmentRepository shipmentRepository;
     private final FileStorageService fileStorageService;
     private final ActivityService activityService;
+    private final NotificationService notificationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PodService(
             PodRecordRepository podRecordRepository,
             ShipmentRepository shipmentRepository,
             FileStorageService fileStorageService,
-            ActivityService activityService) {
+            ActivityService activityService,
+            NotificationService notificationService) {
         this.podRecordRepository = podRecordRepository;
         this.shipmentRepository = shipmentRepository;
         this.fileStorageService = fileStorageService;
         this.activityService = activityService;
+        this.notificationService = notificationService;
     }
 
     // (iii)(iv)(v)(vi) Submit: confirmation + verification + evidence storage
@@ -93,6 +98,17 @@ public class PodService {
         activityService.save(submittedBy, "POD_SUBMITTED",
                 "Proof of delivery captured for " + shipment.getTrackingId()
                         + " (received by " + record.getReceiverName() + ")");
+
+        // (iii) Delivery confirmation alert, now that proof of delivery is on file.
+        try {
+            notificationService.notify(
+                    shipment.getCustomerId(),
+                    NotificationType.DELIVERY_ALERT,
+                    "Shipment " + shipment.getTrackingId() + " delivery confirmed",
+                    "Proof of delivery was recorded — received by " + record.getReceiverName() + ".",
+                    shipment.getTrackingId());
+        } catch (Exception ignored) {
+        }
 
         return toResponse(saved);
     }

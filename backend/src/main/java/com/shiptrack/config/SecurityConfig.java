@@ -59,7 +59,9 @@ public class SecurityConfig {
                         .hasRole("LOGISTICS_OPERATOR")
 
                         .requestMatchers("/api/support/**")
-                        .hasRole("SUPPORT_AGENT")
+                        .hasAnyRole(
+                                "SUPPORT_AGENT",
+                                "ADMIN")
 
                         .requestMatchers("/api/shipments/**")
                         .hasAnyRole(

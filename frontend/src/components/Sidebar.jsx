@@ -94,7 +94,10 @@ function Sidebar({ onSelect, activeSection }) {
           {!collapsed && <span>Proof of Delivery</span>}
         </li>
 
-        <li>
+        <li
+          className={activeSection === "notifications" ? "active" : ""}
+          onClick={() => select("notifications")}
+        >
           <FaBell />
           {!collapsed && <span>Notifications</span>}
         </li>

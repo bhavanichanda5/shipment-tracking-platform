@@ -46,6 +46,9 @@ public class User {
     @Column(name = "google_id", unique = true)
     private String googleId;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -17,6 +17,8 @@ import com.shiptrack.auth.repository.UserRepository;
 
 //import com.shiptrack.auth.repository.UserRepository;
 import com.shiptrack.auth.entity.User;
+import com.shiptrack.notification.entity.NotificationType;
+import com.shiptrack.notification.service.NotificationService;
 
 @Service
 public class ShipmentService {
@@ -32,6 +34,9 @@ public class ShipmentService {
 
     @Autowired
     private GeoapifyService geoapifyService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public ShipmentService(ShipmentRepository shipmentRepository, ActivityService activityService) {
 
@@ -72,6 +77,17 @@ public class ShipmentService {
                     null,
                     "SHIPMENT_CREATED",
                     "Shipment " + saved.getTrackingId() + " created");
+        } catch (Exception ignored) {
+        }
+
+        try {
+            notificationService.notify(
+                    saved.getCustomerId(),
+                    NotificationType.SHIPMENT_UPDATE,
+                    "Shipment " + saved.getTrackingId() + " created",
+                    "Your shipment from " + saved.getOrigin() + " to " + saved.getDestination()
+                            + " has been created and is being processed.",
+                    saved.getTrackingId());
         } catch (Exception ignored) {
         }
 
@@ -192,6 +208,12 @@ public class ShipmentService {
         Shipment shipment = shipmentRepository.findByTrackingId(trackingId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found : " + trackingId));
 
+        // Snapshot the ETA as it stood before this ping, so we can tell
+        // whether the new one is a small fluctuation (ignore), a real
+        // update (notify ETA_UPDATE) or a slip backwards (notify
+        // DELAY_WARNING) further down.
+        LocalDateTime previousEta = shipment.getEstimatedDeliveryTime();
+
         // Save Current GPS Location
         shipment.setCurrentLatitude(request.getCurrentLatitude());
         shipment.setCurrentLongitude(request.getCurrentLongitude());
@@ -220,8 +242,11 @@ public class ShipmentService {
 
             shipment.setEstimatedDeliveryTime(eta);
         }
+
+        boolean autoDelivered = metricsAvailable && metrics.distanceKm() <= 0.20; // within 200 meters
+
         // Auto Delivered
-        if (metricsAvailable && metrics.distanceKm() <= 0.20) { // within 200 meters
+        if (autoDelivered) {
 
             shipment.setStatus(ShipmentStatus.DELIVERED);
             shipment.setRemainingDistance(0.0);
@@ -237,6 +262,49 @@ public class ShipmentService {
         }
 
         Shipment saved = shipmentRepository.save(shipment);
+
+        // (ii)(iv) ETA notifications / delay warnings, and the auto-delivered
+        // delivery alert. Throttled so a routine GPS ping (every few seconds)
+        // doesn't spam a notification per call — only a first-time ETA, a
+        // meaningful shift, or an actual slip fires one.
+        try {
+            if (autoDelivered) {
+                notificationService.notify(
+                        saved.getCustomerId(),
+                        NotificationType.DELIVERY_ALERT,
+                        "Shipment " + saved.getTrackingId() + " delivered",
+                        "Your shipment has arrived at " + saved.getDestination() + ".",
+                        saved.getTrackingId());
+            } else if (metricsAvailable) {
+                LocalDateTime newEta = saved.getEstimatedDeliveryTime();
+                if (previousEta == null) {
+                    notificationService.notify(
+                            saved.getCustomerId(),
+                            NotificationType.ETA_UPDATE,
+                            "Shipment " + saved.getTrackingId() + " ETA available",
+                            "Estimated delivery time: " + newEta + ".",
+                            saved.getTrackingId());
+                } else {
+                    long diffMinutes = java.time.Duration.between(previousEta, newEta).toMinutes();
+                    if (diffMinutes >= 20) {
+                        notificationService.notify(
+                                saved.getCustomerId(),
+                                NotificationType.DELAY_WARNING,
+                                "Shipment " + saved.getTrackingId() + " running late",
+                                "Estimated delivery has slipped to " + newEta + ".",
+                                saved.getTrackingId());
+                    } else if (Math.abs(diffMinutes) >= 10) {
+                        notificationService.notify(
+                                saved.getCustomerId(),
+                                NotificationType.ETA_UPDATE,
+                                "Shipment " + saved.getTrackingId() + " ETA updated",
+                                "New estimated delivery time: " + newEta + ".",
+                                saved.getTrackingId());
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
 
         System.out.println("----------------------------");
         System.out.println("Tracking : " + saved.getTrackingId());
@@ -254,6 +322,8 @@ public class ShipmentService {
         Shipment shipment = shipmentRepository.findByTrackingId(trackingId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found with ID: " + trackingId));
 
+        ShipmentStatus previousStatus = shipment.getStatus();
+
         shipment.setStatus(request.getStatus());
 
         if (request.getStatus() == ShipmentStatus.DELIVERED) {
@@ -269,7 +339,61 @@ public class ShipmentService {
             shipment.setLastLocationUpdate(java.time.LocalDateTime.now());
         }
 
-        return shipmentRepository.save(shipment);
+        Shipment saved = shipmentRepository.save(shipment);
+
+        // (i)(iii)(iv) Shipment update / delivery alert / delay warning,
+        // depending on which status was just entered.
+        if (request.getStatus() != previousStatus) {
+            try {
+                notifyStatusChange(saved, request.getStatus());
+            } catch (Exception ignored) {
+            }
+        }
+
+        return saved;
+    }
+
+    private void notifyStatusChange(Shipment shipment, ShipmentStatus newStatus) {
+
+        NotificationType type;
+        String title;
+        String message;
+
+        switch (newStatus) {
+            case OUT_FOR_DELIVERY -> {
+                type = NotificationType.DELIVERY_ALERT;
+                title = "Shipment " + shipment.getTrackingId() + " out for delivery";
+                message = "Your shipment is out for delivery to " + shipment.getDestination() + ".";
+            }
+            case DELIVERED -> {
+                type = NotificationType.DELIVERY_ALERT;
+                title = "Shipment " + shipment.getTrackingId() + " delivered";
+                message = "Your shipment has been delivered to " + shipment.getDestination() + ".";
+            }
+            case FAILED_DELIVERY -> {
+                type = NotificationType.DELAY_WARNING;
+                title = "Shipment " + shipment.getTrackingId() + " delivery failed";
+                message = "The delivery attempt for your shipment was unsuccessful. "
+                        + "It will be rescheduled.";
+            }
+            case CANCELLED -> {
+                type = NotificationType.SHIPMENT_UPDATE;
+                title = "Shipment " + shipment.getTrackingId() + " cancelled";
+                message = "Your shipment has been cancelled.";
+            }
+            default -> {
+                type = NotificationType.SHIPMENT_UPDATE;
+                title = "Shipment " + shipment.getTrackingId() + " updated";
+                message = "Status changed to " + newStatus + ".";
+            }
+        }
+
+        notificationService.notify(
+                shipment.getCustomerId(),
+                type,
+                title,
+                message,
+                shipment.getTrackingId());
     }
 
     // 3. Get Tracking Details

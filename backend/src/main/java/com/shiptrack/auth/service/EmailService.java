@@ -39,4 +39,20 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    // Used by NotificationService for the email notification channel.
+    public void sendNotificationEmail(String toAddress, String title, String body) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        if (fromAddress != null && !fromAddress.isBlank()) {
+            message.setFrom(fromAddress);
+        }
+
+        message.setTo(toAddress);
+        message.setSubject("ShipTrack - " + title);
+        message.setText(body + "\n\n- ShipTrack Team");
+
+        mailSender.send(message);
+    }
 }

@@ -24,6 +24,7 @@ import {
 } from "react-icons/fa";
 
 import "../../../styles/StatCard.css";
+import Notifications from "../../notification/Notifications";
 
 function LogisticsDashboard() {
   const [stats, setStats] = useState({
@@ -156,19 +157,13 @@ function LogisticsDashboard() {
 
           {section === "tracking" && <Tracking />}
 
-          {/* Delivery */}
-
           {section === "delivery" && <Delivery />}
 
           {section === "routes" && <RouteManagement />}
 
           {section === "proof" && <ProofOfDelivery />}
 
-          {/* Notifications */}
-
-          {section === "notifications" && (
-            <h2>🔔 Notifications Coming Soon...</h2>
-          )}
+          {section === "notifications" && <Notifications />}
         </div>
       </div>
     </div>

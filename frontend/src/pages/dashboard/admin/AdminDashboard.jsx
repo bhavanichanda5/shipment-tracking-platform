@@ -11,6 +11,9 @@ import Delivery from "../../delivery/Delivery";
 import Reports from "../../../pages/reports/Reports";
 import Analytics from "../../../pages/analytics/Analytics";
 import ProofOfDelivery from "../../pod/ProofOfDelivery";
+import Notifications from "../../notification/Notifications";
+
+import SupportRequestTable from "../../../components/support_agent/SupportRequestTable";
 
 import { useEffect, useState } from "react";
 
@@ -74,7 +77,11 @@ function AdminDashboard() {
       >
         {/* Navbar */}
 
-        <Navbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <Navbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onNavigate={setSection}
+        />
 
         {/* Scrollable Content */}
 
@@ -149,25 +156,38 @@ function AdminDashboard() {
 
           {section === "pod" && <ProofOfDelivery />}
 
+          {section === "notifications" && <Notifications />}
+
           {section === "analytics" && <Analytics />}
 
           {section === "reports" && <Reports />}
 
           {/* Bottom Section (visible only on Dashboard view) */}
           {section === "dashboard" && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "25px",
-                marginTop: "30px",
-                marginBottom: "30px",
-              }}
-            >
-              <QuickActions />
+            <>
+              {/* Customer Support Section */}
+              <div
+                style={{
+                  marginTop: "30px",
+                  marginBottom: "30px",
+                }}
+              >
+                <SupportRequestTable />
+              </div>
 
-              <RecentActivities />
-            </div>
+              {/* Bottom Widgets */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "25px",
+                }}
+              >
+                <QuickActions />
+
+                <RecentActivities />
+              </div>
+            </>
           )}
         </div>
       </div>
