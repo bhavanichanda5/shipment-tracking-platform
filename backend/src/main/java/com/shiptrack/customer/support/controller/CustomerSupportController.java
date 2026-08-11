@@ -61,4 +61,12 @@ public class CustomerSupportController {
                 customerSupportService.getMyRequests());
     }
 
+    @GetMapping("/requests/{id}")
+    public ResponseEntity<?> getSupportRequestById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                customerSupportService.getSupportRequestById(id));
+    }
+
 }

@@ -25,4 +25,6 @@ public interface CustomerSupportService {
      */
     List<CustomerSupportResponseDto> getMyRequests();
 
+    Object getSupportRequestById(Long id);
+
 }
