@@ -55,9 +55,8 @@ public class AdminShipmentController {
         shipmentService.deleteShipment(id);
     }
 
-
     // Live location ping endpoint (from driver app / IoT simulator)
-  @PostMapping("/{trackingId}/location")
+    @PostMapping("/{trackingId}/location")
     public ResponseEntity<Shipment> updateLiveLocation(
             @PathVariable String trackingId,
             @RequestBody LocationUpdateRequest request) {

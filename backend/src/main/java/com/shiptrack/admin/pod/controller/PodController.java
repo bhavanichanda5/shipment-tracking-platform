@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import com.shiptrack.admin.pod.service.PodService;
 
 @RestController
 @RequestMapping("/api/admin/pod")
+@PreAuthorize("hasAnyRole('ADMIN', 'LOGISTICS_OPERATOR', 'DRIVER')")
 public class PodController {
 
     private final PodService podService;

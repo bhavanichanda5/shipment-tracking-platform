@@ -14,6 +14,9 @@ import com.shiptrack.admin.shipment.entity.Shipment;
 import com.shiptrack.admin.shipment.entity.ShipmentStatus;
 import com.shiptrack.admin.shipment.repository.ShipmentRepository;
 import com.shiptrack.auth.repository.UserRepository;
+import com.shiptrack.driver.entity.Driver;
+import com.shiptrack.driver.entity.DriverStatus;
+import com.shiptrack.driver.repository.DriverRepository;
 
 //import com.shiptrack.auth.repository.UserRepository;
 import com.shiptrack.auth.entity.User;
@@ -23,6 +26,13 @@ import com.shiptrack.notification.service.NotificationService;
 @Service
 public class ShipmentService {
 
+    // Kept in sync with DriverService's TERMINAL_STATUSES — a shipment in
+    // one of these states is no longer "active" for the driver assigned to it.
+    private static final List<ShipmentStatus> TERMINAL_STATUSES = List.of(
+            ShipmentStatus.DELIVERED,
+            ShipmentStatus.CANCELLED,
+            ShipmentStatus.FAILED_DELIVERY);
+
     private final ShipmentRepository shipmentRepository1;
     private final ActivityService activityService;
 
@@ -31,6 +41,9 @@ public class ShipmentService {
 
     @Autowired
     private ShipmentRepository shipmentRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     @Autowired
     private GeoapifyService geoapifyService;
@@ -141,6 +154,7 @@ public class ShipmentService {
             activityService.save(null, "SHIPMENT_UPDATED", "Shipment " + saved.getTrackingId() + " updated");
         } catch (Exception ignored) {
         }
+        releaseDriverIfTerminal(saved);
         return saved;
     }
 
@@ -160,6 +174,29 @@ public class ShipmentService {
 
     private String generateTrackingId() {
         return "TRK-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    // If this shipment just landed on a terminal status (DELIVERED,
+    // CANCELLED, FAILED_DELIVERY) and it has a driver assigned, free that
+    // driver back up to AVAILABLE — unless they have another active
+    // shipment. Called from every path that can change a shipment's
+    // status (generic update, status endpoint, GPS auto-delivery) so the
+    // driver never gets stuck on ON_DELIVERY no matter which one fired.
+    private void releaseDriverIfTerminal(Shipment shipment) {
+        Driver driver = shipment.getAssignedDriver();
+        if (driver == null || !TERMINAL_STATUSES.contains(shipment.getStatus())) {
+            return;
+        }
+
+        boolean hasOtherActiveShipment = shipmentRepository.findByAssignedDriver_Id(driver.getId())
+                .stream()
+                .anyMatch(s -> !s.getId().equals(shipment.getId())
+                        && !TERMINAL_STATUSES.contains(s.getStatus()));
+
+        if (!hasOtherActiveShipment) {
+            driver.setStatus(DriverStatus.AVAILABLE);
+            driverRepository.save(driver);
+        }
     }
 
     // ================= HELPER METHODS =================
@@ -262,6 +299,7 @@ public class ShipmentService {
         }
 
         Shipment saved = shipmentRepository.save(shipment);
+        releaseDriverIfTerminal(saved);
 
         // (ii)(iv) ETA notifications / delay warnings, and the auto-delivered
         // delivery alert. Throttled so a routine GPS ping (every few seconds)
@@ -340,6 +378,7 @@ public class ShipmentService {
         }
 
         Shipment saved = shipmentRepository.save(shipment);
+        releaseDriverIfTerminal(saved);
 
         // (i)(iii)(iv) Shipment update / delivery alert / delay warning,
         // depending on which status was just entered.

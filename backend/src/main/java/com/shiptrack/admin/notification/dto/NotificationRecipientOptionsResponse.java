@@ -25,6 +25,8 @@ public class NotificationRecipientOptionsResponse {
 
     private List<UserOption> supportAgents;
 
+    private List<UserOption> drivers;
+
     @Getter
     @Builder
     @AllArgsConstructor

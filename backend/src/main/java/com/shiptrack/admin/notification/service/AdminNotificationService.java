@@ -38,7 +38,8 @@ public class AdminNotificationService {
             Role.CUSTOMER,
             Role.BUSINESS_CLIENT,
             Role.LOGISTICS_OPERATOR,
-            Role.SUPPORT_AGENT);
+            Role.SUPPORT_AGENT,
+            Role.DRIVER);
 
     private final UserRepository userRepository;
     private final ShipmentRepository shipmentRepository;
@@ -74,6 +75,7 @@ public class AdminNotificationService {
                 .businessClients(userOptions(Role.BUSINESS_CLIENT))
                 .logisticsOperators(userOptions(Role.LOGISTICS_OPERATOR))
                 .supportAgents(userOptions(Role.SUPPORT_AGENT))
+                .drivers(userOptions(Role.DRIVER))
                 .build();
     }
 

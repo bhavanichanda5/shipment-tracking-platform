@@ -60,7 +60,9 @@ public class RouteService {
                             ? "origin (\"" + request.getOrigin() + "\")"
                             : "destination (\"" + request.getDestination() + "\")";
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                    "Could not resolve the " + which + ". Try a more specific address (add city/state/country).");
+                    "Could not resolve the " + which + ". If this address looks correct, the geocoding "
+                            + "service (Geoapify) may be unreachable, rate-limited, or misconfigured — "
+                            + "check the backend logs for the exact \"Geoapify geocode API error\" line.");
         }
 
         RouteMetrics metrics = geoapifyService.calculateRouteMetrics(
