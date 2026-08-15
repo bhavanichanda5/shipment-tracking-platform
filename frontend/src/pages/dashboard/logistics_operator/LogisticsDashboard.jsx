@@ -10,7 +10,7 @@ import QuickActions from "../../../components/QuickActions";
 import Tracking from "../../tracking/Tracking";
 import Delivery from "../../delivery/Delivery";
 
-import RouteManagement from "../../../components/Routemanagement";
+import RouteManagement from "../../../components/RouteManagement";
 import ProofOfDelivery from "../../pod/ProofOfDelivery";
 import DriverManagement from "../../../components/operator/DriverManagement";
 
