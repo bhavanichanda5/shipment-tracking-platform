@@ -24,7 +24,7 @@ import { FaUsers, FaBoxOpen, FaTruck, FaCheckCircle } from "react-icons/fa";
 
 import "../../../styles/StatCard.css";
 import { Route } from "react-router-dom";
-import RouteManagement from "../../../components/Routemanagement";
+import RouteManagement from "../../../components/RouteManagement";
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
